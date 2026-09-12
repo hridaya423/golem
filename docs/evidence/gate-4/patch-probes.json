@@ -1,0 +1,41 @@
+{
+  "label": "Kimi K3 on Modal",
+  "patchResults": [
+    {
+      "transcript": "Double the turn rate",
+      "elapsedMs": 1322.7333750000007,
+      "schemaOk": true,
+      "value": {
+        "version": 1,
+        "mechanic": "glide",
+        "operation": "multiply_turn_rate",
+        "factor": 2,
+        "cartridgeLine": "Three arches, one moon gate—wings bite twice as quick through the turn."
+      }
+    },
+    {
+      "transcript": "make it turn way slower and smoother",
+      "elapsedMs": 1971.3525,
+      "schemaOk": true,
+      "value": {
+        "version": 1,
+        "mechanic": "glide",
+        "operation": "multiply_turn_rate",
+        "factor": 0.5,
+        "cartridgeLine": "Glide turns drift half as fast—smooth arcs, wide moonlit curves."
+      }
+    },
+    {
+      "transcript": "twice as sharp turns please",
+      "elapsedMs": 1341.6385839999984,
+      "schemaOk": true,
+      "value": {
+        "version": 1,
+        "mechanic": "glide",
+        "operation": "multiply_turn_rate",
+        "factor": 2,
+        "cartridgeLine": "Three arches, one moon gate—turns bite twice as sharp."
+      }
+    }
+  ]
+}

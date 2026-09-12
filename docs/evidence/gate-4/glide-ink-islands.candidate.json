@@ -1,0 +1,109 @@
+{
+  "label": "Kimi K3 on Modal",
+  "elapsedMs": 6398.058417,
+  "imageId": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
+  "schemaOk": true,
+  "validated": null,
+  "candidate": {
+    "version": 1,
+    "title": "Ink Moon Arch Glide",
+    "tagline": "Fly the misty waterway through colossal stone arches toward the crescent moon.",
+    "world": {
+      "basePrompt": "A monochrome ink-wash landscape of a vast calm sea veiled in drifting mist. Colossal circular stone arches, crowned with pine trees, rise from the water in a receding line. Sheer cliffs with thin waterfalls flank both sides, floating rock islands hover in the pale sky, and a slender crescent moon hangs far ahead. Soft gray light, layered mountain silhouettes, and gentle ripples continue the scene forward in quiet, dreamlike stillness.",
+      "landmarks": [
+        {
+          "id": "grand-arch",
+          "description": "The largest circular stone arch, crowned with pines, rising from the sea."
+        },
+        {
+          "id": "crescent-moon",
+          "description": "A pale crescent moon floating low over the distant water."
+        },
+        {
+          "id": "far-arches",
+          "description": "Two smaller stone arches receding into the mist ahead."
+        },
+        {
+          "id": "waterfall-cliffs",
+          "description": "Sheer ink-dark cliffs with thin waterfalls flanking the waterway."
+        }
+      ],
+      "perspective": "first_person"
+    },
+    "mechanic": {
+      "kind": "glide",
+      "lift": 1,
+      "drag": 1,
+      "turnRate": 1,
+      "boost": 1
+    },
+    "entities": [
+      {
+        "id": "mist-launch",
+        "kind": "start",
+        "position": [
+          0,
+          18,
+          0
+        ],
+        "radius": 4,
+        "label": "Misty Waterway Launch"
+      },
+      {
+        "id": "grand-arch-ring",
+        "kind": "checkpoint",
+        "position": [
+          -8,
+          22,
+          100
+        ],
+        "radius": 14,
+        "label": "Grand Pine Arch Ring"
+      },
+      {
+        "id": "crescent-ring",
+        "kind": "checkpoint",
+        "position": [
+          14,
+          30,
+          210
+        ],
+        "radius": 12,
+        "label": "Crescent Moon Ring"
+      },
+      {
+        "id": "far-arch-ring",
+        "kind": "checkpoint",
+        "position": [
+          -10,
+          20,
+          320
+        ],
+        "radius": 12,
+        "label": "Far Mist Arch Ring"
+      },
+      {
+        "id": "moon-gate",
+        "kind": "goal",
+        "position": [
+          0,
+          26,
+          430
+        ],
+        "radius": 16,
+        "label": "Moon Gate Beyond the Arches"
+      }
+    ],
+    "rules": {
+      "durationSeconds": 40,
+      "requiredCheckpointIds": [
+        "grand-arch-ring",
+        "crescent-ring",
+        "far-arch-ring"
+      ],
+      "goalEntityId": "moon-gate",
+      "respawnBehindDistance": 15
+    },
+    "cartridgeLine": "Thread the pine-crowned arches of an ink-wash sea before the mist closes in."
+  }
+}
