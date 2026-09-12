@@ -397,7 +397,7 @@ test("Canvas overlay removes destroyed silhouettes, draws feedback and never cle
     save: () => { saves++; }, restore: () => { saves--; },
     beginPath: noop, moveTo: noop, lineTo: noop, closePath: noop, translate: noop,
     fill: () => { faces++; }, stroke: () => { lines++; },
-    fillRect: noop, strokeRect: noop, fillText: noop,
+    fillRect: noop, strokeRect: noop, fillText: noop, ellipse: noop, arc: noop, setLineDash: noop,
     quadraticCurveTo: () => { rope++; },
     clearRect: () => assert.fail("ability overlay cleared the route canvas"),
   } as unknown as CanvasRenderingContext2D;
@@ -434,7 +434,7 @@ test("Canvas target bodies and grapple rope use the supplied image palette with 
     save: noop, restore: noop, beginPath: noop, moveTo: noop, lineTo: noop, closePath: noop, translate: noop,
     fill: () => { faces.push(String(ctx.fillStyle)); },
     stroke: () => { strokes.push(String(ctx.strokeStyle)); },
-    fillRect: noop, strokeRect: noop, fillText: noop, quadraticCurveTo: noop,
+    fillRect: noop, strokeRect: noop, fillText: noop, ellipse: noop, arc: noop, setLineDash: noop, quadraticCurveTo: noop,
   } as unknown as CanvasRenderingContext2D;
   for (const palette of palettes) {
     faces.length = 0;
@@ -445,7 +445,9 @@ test("Canvas target bodies and grapple rope use the supplied image palette with 
     assert.ok(faces.includes(color(palette.midtone)));
     assert.ok(faces.includes(color(palette.highlight)));
     assert.ok(faces.every((fill) => [palette.shadow, palette.midtone, palette.highlight].some((rgb) => color(rgb) === fill)));
-    assert.deepEqual(strokes.slice(5, 7), [color(palette.shadow), color(palette.highlight)]);
+    assert.ok(strokes.includes(color(palette.shadow)));
+    assert.ok(strokes.includes(color(palette.highlight)));
+    assert.ok(strokes.includes(color(palette.midtone)));
     assert.deepEqual(palette, snapshot);
   }
   faces.length = 0;

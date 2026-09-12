@@ -1,4 +1,4 @@
-import { ABILITY_CALIBRATION, type AbilityState } from "./abilities.ts";
+import { ABILITY_CALIBRATION, ENEMY_LABELS, type AbilityState } from "./abilities.ts";
 import { forwardOf, projectPoint, type GlideState, type Vec3 } from "./glide.ts";
 import type { HoopPalette } from "./hoops.ts";
 
@@ -31,24 +31,53 @@ export function drawAbilities(ctx: CanvasRenderingContext2D, state: AbilityState
       ctx.lineWidth = unit;
       ctx.stroke();
     };
-    face([[-0.45, -0.12], [-1, -0.42], [-0.9, 0.35], [-0.35, 0.2]], midtone);
-    face([[0.45, -0.12], [1, -0.42], [0.9, 0.35], [0.35, 0.2]], shadow);
-    face([[0, -0.75], [-0.55, -0.15], [0, 0.12], [0.55, -0.15]], highlight);
-    face([[-0.55, -0.15], [0, 0.12], [0, 0.65], [-0.48, 0.3]], midtone);
-    face([[0.55, -0.15], [0, 0.12], [0, 0.65], [0.48, 0.3]], shadow);
-    ctx.fillStyle = target.hp === 1 ? highlight : midtone;
-    ctx.fillRect(-size * 0.24, -size * 0.09, size * 0.48, size * 0.14);
+    const disc = (x: number, y: number, rx: number, ry: number, fill: string, stroke: string) => {
+      ctx.beginPath();
+      ctx.ellipse(x * size, y * size, rx * size, ry * size, 0, 0, Math.PI * 2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = unit;
+      ctx.stroke();
+    };
+    if (target.kind === "scout") {
+      face([[-1.05, -0.36], [-0.4, -0.2], [-0.4, 0], [-0.95, -0.12]], midtone);
+      face([[1.05, -0.36], [0.4, -0.2], [0.4, 0], [0.95, -0.12]], shadow);
+      for (const side of [-1, 1]) disc(side * 1.05, -0.4, 0.36, 0.11, shadow, highlight);
+      face([[0, -0.52], [-0.44, -0.16], [-0.34, 0.3], [0.34, 0.3], [0.44, -0.16]], midtone);
+      face([[0, -0.52], [0.44, -0.16], [0.34, 0.3], [0, 0.16]], shadow);
+      disc(0, -0.08, 0.14, 0.14, highlight, shadow);
+    } else if (target.kind === "striker") {
+      face([[-0.14, -0.26], [-1.02, 0.16], [-0.96, 0.5], [-0.18, 0.32]], midtone);
+      face([[0.14, -0.26], [1.02, 0.16], [0.96, 0.5], [0.18, 0.32]], shadow);
+      face([[-0.12, 0.38], [-0.4, 0.76], [-0.08, 0.68]], midtone);
+      face([[0.12, 0.38], [0.4, 0.76], [0.08, 0.68]], shadow);
+      face([[0, -0.95], [-0.16, -0.2], [-0.12, 0.45], [0, 0.58], [0.12, 0.45], [0.16, -0.2]], highlight);
+      ctx.fillStyle = shadow;
+      ctx.fillRect(-size * 0.05, -size * 0.44, size * 0.1, size * 0.3);
+    } else {
+      face([[0, -0.9], [-0.78, -0.46], [-0.9, 0.18], [-0.46, 0.78], [0.46, 0.78], [0.9, 0.18], [0.78, -0.46]], midtone);
+      face([[0, -0.9], [0.78, -0.46], [0.9, 0.18], [0.46, 0.78], [0, 0.58]], shadow);
+      face([[0, -0.6], [-0.4, -0.3], [-0.44, 0.14], [0, 0.42], [0.44, 0.14], [0.4, -0.3]], highlight);
+      for (const [rx, ry] of [[-0.52, -0.1], [0.52, -0.1], [-0.26, 0.5], [0.26, 0.5]] as const) disc(rx, ry, 0.08, 0.08, shadow, midtone);
+    }
+    if (target.hitFlash > 0) {
+      ctx.globalAlpha *= 0.35 + 0.65 * (target.hitFlash / ABILITY_CALIBRATION.hitFlashDuration);
+      disc(0, 0, 1.1, 1.1, highlight, highlight);
+      ctx.globalAlpha = Math.min(1, ABILITY_CALIBRATION.fireRange / p.depth);
+    }
     if (p.depth <= ABILITY_CALIBRATION.fireRange) {
       ctx.fillStyle = highlight;
       ctx.font = `600 ${12 * unit}px ui-monospace, monospace`;
       ctx.textAlign = "center";
       ctx.shadowColor = shadow;
       ctx.shadowBlur = 4 * unit;
-      ctx.fillText(target.id.replace("sentinel-", "SENTINEL "), 0, -size - 12 * unit);
+      ctx.fillText(ENEMY_LABELS[target.kind].toUpperCase(), 0, -size - 12 * unit);
       ctx.shadowBlur = 0;
-      for (let hp = 0; hp < ABILITY_CALIBRATION.targetHp; hp++) {
+      const pips = target.maxHp;
+      for (let hp = 0; hp < pips; hp++) {
         ctx.fillStyle = hp < target.hp ? highlight : shadow;
-        ctx.fillRect((hp - 1) * 9 * unit + unit, size + 5 * unit, 7 * unit, 3 * unit);
+        ctx.fillRect((hp - (pips - 1) / 2) * 9 * unit - 3.5 * unit, size + 5 * unit, 7 * unit, 3 * unit);
       }
     }
     ctx.restore();
@@ -59,19 +88,41 @@ export function drawAbilities(ctx: CanvasRenderingContext2D, state: AbilityState
     const anchor = projectPoint(state.grappleAnchor, player, width, height);
     if (anchor) {
       const x = width * 0.31, y = height * 0.92;
+      const length = Math.hypot(anchor.x - x, anchor.y - y);
+      const sag = Math.min(length * 0.05, height * 0.045) + 2 * unit;
+      const cx = (x + anchor.x) / 2, cy = (y + anchor.y) / 2 + sag;
+      const rope = (lineWidth: number, color: string, dash?: number[]) => {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.quadraticCurveTo(cx, cy, anchor.x, anchor.y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        if (dash) ctx.setLineDash(dash);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      };
+      rope(6 * unit, shadow);
+      rope(3.4 * unit, midtone);
+      rope(1.3 * unit, highlight, [5 * unit, 4 * unit]);
       ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.quadraticCurveTo((x + anchor.x) / 2, (y + anchor.y) / 2 + height * 0.025, anchor.x, anchor.y);
-      ctx.strokeStyle = shadow;
-      ctx.lineWidth = 5 * unit;
-      ctx.stroke();
+      ctx.arc(anchor.x, anchor.y, 5.5 * unit, 0, Math.PI * 2);
       ctx.strokeStyle = highlight;
-      ctx.lineWidth = 2 * unit;
+      ctx.lineWidth = 2.2 * unit;
       ctx.stroke();
-      ctx.fillStyle = highlight;
+      ctx.beginPath();
+      ctx.arc(anchor.x, anchor.y, 2.2 * unit, 0, Math.PI * 2);
+      ctx.strokeStyle = midtone;
+      ctx.lineWidth = 1.2 * unit;
+      ctx.stroke();
+      const handAngle = Math.atan2(cy - y, cx - x);
+      ctx.beginPath();
+      ctx.moveTo(x - Math.cos(handAngle) * 9 * unit, y - Math.sin(handAngle) * 9 * unit);
+      ctx.lineTo(x, y);
       ctx.strokeStyle = shadow;
-      ctx.fillRect(anchor.x - 4 * unit, anchor.y - 4 * unit, 8 * unit, 8 * unit);
-      ctx.strokeRect(anchor.x - 4 * unit, anchor.y - 4 * unit, 8 * unit, 8 * unit);
+      ctx.lineWidth = 7 * unit;
+      ctx.lineCap = "round";
+      ctx.stroke();
+      ctx.lineCap = "butt";
     }
   }
 

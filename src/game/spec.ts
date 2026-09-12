@@ -88,6 +88,7 @@ export const GameSpecCandidateSchema = z.strictObject({
   world: WorldCandidateSchema,
   mechanic: GlideSpecSchema,
   hoops: HoopAppearanceSchema,
+  enemies: z.array(z.enum(["scout", "striker", "bulwark"])).length(3).readonly(),
   entities: z.array(ProxyEntitySchema).length(5).readonly(),
   rules: GameRulesSchema,
   cartridgeLine: text(SPEC_LIMITS.cartridgeLine),

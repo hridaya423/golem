@@ -15,6 +15,7 @@ export const FALLBACK_CANDIDATE: GameSpecCandidate = {
   },
   mechanic: { ...FIXTURE_COURSE.mechanic },
   hoops: { ...DEFAULT_HOOP_APPEARANCE },
+  enemies: ["scout", "striker", "bulwark"],
   entities: [...FIXTURE_COURSE.entities],
   rules: { ...FIXTURE_COURSE.rules },
   cartridgeLine: "Three arches, one moon gate, no second chances.",

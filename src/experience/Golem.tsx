@@ -135,10 +135,11 @@ function drawRoute(
   course: GlideCourse,
   palette: HoopPalette | null,
   surface: HoopSurface | null,
+  abilities: AbilityState | null,
 ): void {
   const { width, height } = ctx.canvas;
   ctx.clearRect(0, 0, width, height);
-  drawHoops(ctx, state, course, palette ?? undefined, surface ?? undefined);
+  drawHoops(ctx, state, course, palette ?? undefined, surface ?? undefined, { abilities: abilities ?? undefined });
   const unit = height / (ctx.canvas.clientHeight || height);
   const x = width / 2, y = height / 2;
   ctx.save();
@@ -459,7 +460,7 @@ export function Golem({
     let state = createGlideState(course);
     runRef.current = state;
     controlsSuspendedRef.current = false;
-    abilitiesRef.current = adventure ? createAbilityState(course) : null;
+    abilitiesRef.current = adventure ? createAbilityState(course, phase.spec.enemies) : null;
     world?.setTurnRate(reactorTurnDeg(phase.spec.mechanic.turnRate));
     world?.setControls(controlsFromInput(inputRef.current));
     lastControlsRef.current = controlsFromInput(inputRef.current);
@@ -527,7 +528,7 @@ export function Golem({
       if (steps === MAX_FRAME_STEPS) accumulator = 0;
       runRef.current = state;
       if (ctx) {
-        drawRoute(ctx, state, course, hoopPaletteRef.current, hoopSurfaceRef.current);
+        drawRoute(ctx, state, course, hoopPaletteRef.current, hoopSurfaceRef.current, abilitiesRef.current);
         if (abilitiesRef.current) drawAbilities(ctx, abilitiesRef.current, state, hoopPaletteRef.current ?? undefined);
       }
       const keyDownAt = keyDownAtRef.current;
