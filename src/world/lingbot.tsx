@@ -47,6 +47,8 @@ async function fetchToken(): Promise<string> {
 }
 
 const AUTO_CONNECT = { autoConnect: true };
+const CAPACITY_RETRY_MS = 8_000;
+const CAPACITY_RETRY_LIMIT = 20;
 
 export function LiveWorldProvider({ children }: { children: ReactNode }) {
   return (
@@ -130,9 +132,28 @@ export function LingbotWorld({ onDriver }: { onDriver: (driver: WorldDriver) => 
     store.set({
       connection: world.status,
       sessionId: world.sessionId,
-      error: world.lastError ? world.lastError.message : undefined,
+      // lastError persists in the SDK store; only a disconnected world should still show it.
+      error: world.lastError && world.status === "disconnected" ? world.lastError.message : undefined,
     });
   }, [store, world.status, world.sessionId, world.lastError]);
+
+  // The shared LingBot pool refuses sessions with 429 "no available capacity" while full; the
+  // SDK's own retries give up within seconds, so keep asking at a slow cadence until a GPU frees up.
+  const capacityRetriesRef = useRef(0);
+  useEffect(() => {
+    const message = world.lastError?.message ?? "";
+    const refused = world.status === "disconnected" && /429|capacity|busy/i.test(message);
+    if (!refused || capacityRetriesRef.current >= CAPACITY_RETRY_LIMIT) return;
+    const attempt = ++capacityRetriesRef.current;
+    store.set({ error: `World pool is full — retrying (${attempt}/${CAPACITY_RETRY_LIMIT})` });
+    const timer = setTimeout(() => {
+      worldRef.current.connect(fetchToken).catch(() => {});
+    }, CAPACITY_RETRY_MS);
+    return () => clearTimeout(timer);
+  }, [store, world.status, world.lastError]);
+  useEffect(() => {
+    if (world.status === "ready") capacityRetriesRef.current = 0;
+  }, [world.status]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -174,7 +195,7 @@ export function LingbotWorld({ onDriver }: { onDriver: (driver: WorldDriver) => 
       subscribe: (listener) => store.subscribe(listener),
       async stage(input: StageInput) {
         const w = () => worldRef.current;
-        await waitForStatus(store, (s) => s.connection === "ready", 120_000, "World did not become ready");
+        await waitForStatus(store, (s) => s.connection === "ready", 180_000, "World did not become ready (pool full)");
         if (store.get().generating || stagedRef.current) {
           reportError(w().reset());
           await waitForStatus(store, (s) => !s.generating, 30_000, "World reset did not complete");
@@ -232,6 +253,11 @@ export function LingbotWorld({ onDriver }: { onDriver: (driver: WorldDriver) => 
         lastSentRef.current = RELEASE_CONTROLS;
         reportError(w.setCameraPose({ camera_pose: EMPTY_CAMERA_POSE }));
         store.set({ lastCommandAt: performance.now() });
+      },
+      async reconnect() {
+        capacityRetriesRef.current = 0;
+        store.set({ error: undefined });
+        await worldRef.current.connect(fetchToken);
       },
       async reset() {
         reportError(worldRef.current.reset());

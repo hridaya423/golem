@@ -1,0 +1,17 @@
+{
+  "taskType": "imageInference",
+  "taskUUID": "ab88c2c6-b588-4175-8fca-3ef9e0bd1d93",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "positivePrompt": "A landscape 1664 by 960 reference frame for first-person forward gliding through a sunlit red sandstone slot canyon at golden hour. This is a world illustration, not a website or interface. Warm layered rock walls rise on both sides and open toward a clear level horizon at 45 percent of image height, a wide dry riverbed of pale sand runs down the center as an open flight corridor. Three and only three large natural rock arches bridge the canyon ahead at visibly different distances: a large near arch slightly left, a medium arch farther slightly right, a small third arch near center. A distant sunlit gap in the canyon wall where the light pours through forms the destination. Painterly realism, long shadows, drifting dust motes, saturated orange and deep violet shade, crisp silhouette design. Camera floating steadily above the sand, eye level, no visible person or vehicle. Exactly three route arches plus one distant light-gap destination. No text, labels, logos, UI, borders, HUD, humans, animals, crowds, weapons, or tiny precision platforms. Fill the entire frame.",
+  "width": 1664,
+  "height": 960,
+  "numberResults": 1,
+  "outputType": "URL",
+  "outputFormat": "WEBP",
+  "deliveryMethod": "sync",
+  "settings": {
+    "quality": "high",
+    "background": "opaque"
+  },
+  "includeCost": true
+}

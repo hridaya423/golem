@@ -1,0 +1,12 @@
+{
+  "taskUUID": "ab88c2c6-b588-4175-8fca-3ef9e0bd1d93",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "imageUUID": "5e8a2622-9707-4892-9b2e-fc9e186cf407",
+  "path": "public/fixtures/glide-red-canyon.webp",
+  "width": 1664,
+  "height": 960,
+  "bytes": 425798,
+  "sha256": "e0196afd52d19dab1f1a5941bcf36ed63e4460b4483e7a01cbd131a33ed17e7c",
+  "elapsedMilliseconds": 35557,
+  "cost": 0.03739
+}

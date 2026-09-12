@@ -240,6 +240,33 @@ button.secondary {
   color: var(--fail);
 }
 
+.step-fallback {
+  color: var(--warn);
+}
+
+.decision {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  text-align: left;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.decision div {
+  display: flex;
+  gap: 16px;
+}
+
+.decision dt {
+  width: 64px;
+  color: var(--muted);
+}
+
+.decision dd {
+  margin: 0;
+}
+
 .step-mark {
   width: 24px;
   text-align: center;

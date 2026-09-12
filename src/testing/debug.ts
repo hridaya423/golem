@@ -4,7 +4,15 @@ import type { WorldStatus } from "../world/world";
 export type DebugSnapshot = {
   phase: string;
   mode: "fake" | "live";
-  fallbackLevel: 1 | 4;
+  fallbackLevel: 1 | 3 | 4;
+  spec: null | {
+    title: string;
+    referenceImageId: string;
+    seed: number;
+    turnRate: number;
+    source: string;
+    checks: string | null;
+  };
   run: null | {
     status: GlideState["status"];
     elapsed: number;

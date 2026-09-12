@@ -13,6 +13,20 @@ const assets = [
     prompt: `A landscape 1664 by 960 reference frame for first-person forward gliding through a monochrome ink archipelago. This is a world illustration, not a website or interface. Elegant ink-wash drawings on luminous pale rice paper: floating dark basalt-paper islands flank a broad open corridor through the center. Strong clear level horizon at 45 percent of image height, soft atmospheric depth, three and only three large ancient circular stone arch landmarks standing along the forward corridor, visibly separated by distance: one large near arch centered slightly left, a medium arch farther slightly right, a small third arch near center. A distant crescent-moon gate beyond them forms the destination. Open air under and around each arch, forgiving spacious flight path. Camera floating steadily above the paper sea, eye level, no visible person or vehicle. Charcoal, warm white paper, delicate gray mist, highly legible silhouette design, hand-drawn ink edges and detailed rocky island textures concentrated at the sides. Quiet wonder and immense scale. The center remains navigable and uncluttered. Exactly three large route arches plus one distant moon-shaped destination. No text, labels, logos, UI, borders, HUD, humans, crowds, weapons, tiny doors or precision platforms. Fill the entire frame with the illustrated world.`,
   },
   {
+    name: "glide-neon-canyon",
+    path: "public/fixtures/glide-neon-canyon.webp",
+    width: 1664,
+    height: 960,
+    prompt: `A landscape 1664 by 960 reference frame for first-person forward gliding down a rain-slick neon canyon street at night. This is a world illustration, not a website or interface. Towering dark glass and concrete buildings on both sides recede toward a clear level horizon at 45 percent of image height; wet asphalt reflects magenta, cyan and amber signage. Three and only three large glowing circular gantry rings span the street ahead at visibly different distances: a large near ring slightly right, a medium ring farther slightly left, a small third ring near center. A distant bright elevated rail station arch beyond them forms the destination. The street center is open and navigable; density and detail concentrate on the flanking facades. Camera floating steadily at second-floor height, eye level, no visible person or vehicle. Cinematic photographic realism, light rain haze, sharp bokeh-free focus. Exactly three route rings plus one distant arch destination. No text, legible words, logos, UI, borders, HUD, humans, crowds, weapons, or tiny precision platforms. Fill the entire frame.`,
+  },
+  {
+    name: "glide-red-canyon",
+    path: "public/fixtures/glide-red-canyon.webp",
+    width: 1664,
+    height: 960,
+    prompt: `A landscape 1664 by 960 reference frame for first-person forward gliding through a sunlit red sandstone slot canyon at golden hour. This is a world illustration, not a website or interface. Warm layered rock walls rise on both sides and open toward a clear level horizon at 45 percent of image height, a wide dry riverbed of pale sand runs down the center as an open flight corridor. Three and only three large natural rock arches bridge the canyon ahead at visibly different distances: a large near arch slightly left, a medium arch farther slightly right, a small third arch near center. A distant sunlit gap in the canyon wall where the light pours through forms the destination. Painterly realism, long shadows, drifting dust motes, saturated orange and deep violet shade, crisp silhouette design. Camera floating steadily above the sand, eye level, no visible person or vehicle. Exactly three route arches plus one distant light-gap destination. No text, labels, logos, UI, borders, HUD, humans, animals, crowds, weapons, or tiny precision platforms. Fill the entire frame.`,
+  },
+  {
     name: "01-input",
     path: "docs/evidence/design/01-input.webp",
     width: 1536,

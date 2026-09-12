@@ -47,6 +47,8 @@ export interface WorldDriver {
   setTurnRate(deg: number): void;
   stopControls(): void;
   reset(): Promise<void>;
+  /** Re-attempt the world connection after a refused/dropped session (no-op for the fake world). */
+  reconnect(): Promise<void>;
   captureFrame(): Promise<Blob | null>;
 }
 

@@ -1,6 +1,38 @@
 # PROGRESS
 
-Gate 0 — complete. Gate 1 — **PASS** (decision recorded below). Gate 2 is next.
+Gate 0 — complete. Gate 1 — **PASS**. Gates 2–4 — **complete** (live compiler qualified). Gate 5 is next.
+
+# Gates 2–4 — trusted GameSpec, semantic validation, live compiler
+
+## Works
+
+- `src/game/spec.ts`: strict Zod contract. Model-facing `GameSpecCandidateSchema` omits `referenceImageId`/`world.seed`; the validator injects both from the prepared image. `SPEC_LIMITS` holds every budget and the Gate 1 course envelope (lane ±60 x, 0–60 y, 0–500 z; spacing 60–130; Δx ≤ 40, Δy ≤ 20 per segment; radii cp 8–16 / goal 10–20 / start 2–6; duration 20–45; multipliers 0.5–2). Branded `ValidatedGameSpec` / `ValidatedGameSpecPatch`. `z.toJSONSchema` produces the strict compiler schema from the same definition.
+- `src/game/validate.ts`: schema → references → bounds → route order/envelope → deterministic pilot (`simulateCourse`) → prompt budget; ≤16 issues, 160-code-point messages; `applyGlideTurnPatch` is transactional and enforces runtime + Reactor `≤30°` bounds.
+- `src/game/fallback.ts`: ink-islands game as a model-shaped candidate; `fallbackSpec()` always validates.
+- `src/compiler/request.ts`: app-owned system prompts (Glide-only capabilities, live bounds, budgets, injection resistance), `buildGameRequest` (image data URL + bounded direction + one bounded repair turn), `buildPatchRequest`, `callCompiler` (native fetch, 30 s / 12 s aborts, parses only `message.content`, never reasoning content, never leaks bodies or keys).
+- `src/compiler/client.ts`: first call → validate → ONE repair → known fallback; 503 skips to fallback; abort-safe.
+- `src/app/api/compile/route.ts` (multipart, Sharp revalidates 1664×960 WebP) and `src/app/api/patch/route.ts` (re-parses the full trusted spec, clamps transcript to 240 code points; does not apply the patch).
+- Experience: four truthful staging rows (Reading the seed / Writing the rules / Testing the game / Warming the world) with repair/fallback states; ready surface shows title, tagline, WORLD/GAME/RULE/GOAL and a source pill (live / repaired / prepared); `?compiler=off` for offline runs; `fallbackLevel` 1/3/4 in debug.
+- Live adapter: 429 "no available capacity" now triggers slow reconnect attempts (every 8 s, up to 20) instead of giving up after the SDK's three fast retries; `WorldDriver.reconnect()` added.
+
+## Compiler qualification (`docs/evidence/gate-4/`)
+
+- Endpoint: Modal Shared Endpoint for `moonshotai/Kimi-K3` via `https://inference.us-west.modal.direct/v1` (model id = endpoint hostname). `/v1/models` reports `input_modalities: [text, image]`, `supported_features: [structured_outputs, json_mode, reasoning, tools]`, reasoning effort `low|high|max`. Proxy token created with `modal workspace proxy-tokens create`; values written to `.env.local` only.
+- `node --env-file=.env.local scripts/probe-compiler.ts <3 fixtures>`: game **8549 / 5114 / 6253 ms** (median 6253, max 8549 ≤ 30 s) — all three schema-valid AND fully validated first try (no repair needed). Patch probes **1843 / 1818 / 1309 ms** (median 1818 ≤ 8 s): "Double the turn rate" → 2, "make it turn way slower and smoother" → 0.5, "twice as sharp turns please" → 2.
+- Three materially different seeds (all 1664×960 WebP, Runware `openai:gpt-image@2.5-sunburst`, prompts in `scripts/generate-design-assets.mjs`): `glide-ink-islands` (monochrome ink), `glide-neon-canyon` (rain-slick neon street: "Neon Ring Run", magenta/cyan/gold rings), `glide-red-canyon` (sandstone slot canyon: "Arches of the Ember Canyon"). Candidates saved as `*.candidate.json`; none hand-edited.
+- Live browser flow (`REAL_REACTOR=1`): Make playable → Kimi K3 compiled "Ink Sea of Stone Moons" (source live, 6/6 checks, fallbackLevel 1) → pool was full (5 × 429) → auto-retry obtained a session → first frame at 50 s → turn commands confirmed in `active_action`. Evidence in `docs/evidence/gate-1/live-timeline.json`.
+
+## Verification
+
+- `node --test` → 20/20 pass (glide 6, spec 6, compiler-client 5, reactor-contract 2, smoke 1).
+- `pnpm lint`, `pnpm typecheck`, `pnpm build` → clean; routes `/`, `/api/compile`, `/api/patch`, `/api/reactor/token`.
+- `pnpm test:e2e` → 2 passed, 1 skipped (fake flow uses `?world=fake&compiler=off`, asserts `spec.source === "fallback"` and the fixture SHA-256 as `referenceImageId`; no paid calls in tests).
+
+## Notes / deviations
+
+- Within the calibrated envelope the pilot always wins (verified with the hardest in-envelope course at 20 s: the extreme route test). The `unreachable` code therefore fires only if a future envelope/calibration change breaks that relationship — which is exactly what it guards.
+- Modules imported by `node --test` use explicit `.ts` specifiers.
+- A React "maximum update depth" loop (staging effect re-running on each step dispatch) was found by the e2e and fixed with a run-id guard.
 
 # Gate 1 — deterministic Glide + live LingBot coupling
 

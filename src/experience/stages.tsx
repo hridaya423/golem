@@ -47,6 +47,8 @@ export function StatusPill({ status }: { status: WorldStatus }) {
 export function StagingSteps({ steps, warmingLabel }: { steps: readonly StagingStep[]; warmingLabel: string }) {
   const labels: Record<StagingStep["name"], string> = {
     reading: "Reading the seed",
+    rules: "Compiling the rules",
+    testing: "Testing the course",
     warming: warmingLabel,
   };
   return (
@@ -54,9 +56,18 @@ export function StagingSteps({ steps, warmingLabel }: { steps: readonly StagingS
       {steps.map((step) => (
         <li key={step.name} className={`step step-${step.status}`}>
           <span className="step-mark" aria-hidden="true">
-            {step.status === "passed" ? "✓" : step.status === "active" ? "…" : step.status === "failed" ? "!" : "·"}
+            {step.status === "passed"
+              ? "✓"
+              : step.status === "active"
+                ? "…"
+                : step.status === "failed"
+                  ? "!"
+                  : step.status === "fallback"
+                    ? "◦"
+                    : "·"}
           </span>
           {labels[step.name]}
+          {step.detail && <span className="muted"> — {step.detail}</span>}
         </li>
       ))}
     </ol>

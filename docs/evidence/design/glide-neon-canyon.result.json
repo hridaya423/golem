@@ -1,0 +1,12 @@
+{
+  "taskUUID": "a8e3d1bc-6c26-4d93-8b78-138dd1af82c5",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "imageUUID": "c548914d-dbf4-493a-9fd7-5ca51f049ad2",
+  "path": "public/fixtures/glide-neon-canyon.webp",
+  "width": 1664,
+  "height": 960,
+  "bytes": 552112,
+  "sha256": "cb1ade1074f0e803cc10b14900f3844c02b00bee154c50abc6b586daa00da896",
+  "elapsedMilliseconds": 42177,
+  "cost": 0.037405
+}

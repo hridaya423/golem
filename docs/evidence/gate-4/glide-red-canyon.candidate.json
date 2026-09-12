@@ -1,0 +1,247 @@
+{
+  "label": "Kimi K3 on Modal",
+  "elapsedMs": 6253.311333,
+  "imageId": "e0196afd52d19dab1f1a5941bcf36ed63e4460b4483e7a01cbd131a33ed17e7c",
+  "schemaOk": true,
+  "validated": {
+    "ok": true,
+    "spec": {
+      "version": 1,
+      "title": "Arches of the Ember Canyon",
+      "tagline": "Glide beneath three colossal sandstone arches as sunset floods the canyon floor.",
+      "world": {
+        "basePrompt": "A vast desert canyon of layered red sandstone stretches ahead, its walls glowing amber and rust under a low golden sun. Three immense natural rock arches span the gorge in succession, each framing the next, with the farthest arch silhouetted against a blinding sunset glow. Fine golden sand ripples across the canyon floor, scattered with boulders and tufts of dry sagebrush. Warm haze drifts between the cliffs, clouds burn orange and pink overhead, and the passage continues forward through the arches toward the bright horizon.",
+        "landmarks": [
+          {
+            "id": "grand-arch",
+            "description": "The nearest colossal sandstone arch spanning the canyon overhead"
+          },
+          {
+            "id": "middle-arch",
+            "description": "A second weathered rock arch framing the sunset glow"
+          },
+          {
+            "id": "far-arch",
+            "description": "The smallest distant arch silhouetted against the bright horizon"
+          },
+          {
+            "id": "sunset-gap",
+            "description": "The blinding golden gap between far cliffs where the sun sets"
+          }
+        ],
+        "perspective": "first_person",
+        "seed": 3759762173
+      },
+      "mechanic": {
+        "kind": "glide",
+        "lift": 1,
+        "drag": 1,
+        "turnRate": 1,
+        "boost": 1
+      },
+      "entities": [
+        {
+          "id": "canyon-mouth",
+          "kind": "start",
+          "position": [
+            0,
+            12,
+            10
+          ],
+          "radius": 4,
+          "label": "Canyon Mouth Launch"
+        },
+        {
+          "id": "grand-arch-ring",
+          "kind": "checkpoint",
+          "position": [
+            -8,
+            22,
+            100
+          ],
+          "radius": 14,
+          "label": "Beneath the Grand Arch"
+        },
+        {
+          "id": "middle-arch-ring",
+          "kind": "checkpoint",
+          "position": [
+            10,
+            18,
+            210
+          ],
+          "radius": 12,
+          "label": "Through the Middle Arch"
+        },
+        {
+          "id": "far-arch-ring",
+          "kind": "checkpoint",
+          "position": [
+            -6,
+            24,
+            320
+          ],
+          "radius": 12,
+          "label": "Under the Far Arch"
+        },
+        {
+          "id": "sunset-gap-goal",
+          "kind": "goal",
+          "position": [
+            0,
+            20,
+            430
+          ],
+          "radius": 16,
+          "label": "Sunset Gap Goal"
+        }
+      ],
+      "rules": {
+        "durationSeconds": 40,
+        "requiredCheckpointIds": [
+          "grand-arch-ring",
+          "middle-arch-ring",
+          "far-arch-ring"
+        ],
+        "goalEntityId": "sunset-gap-goal",
+        "respawnBehindDistance": 15
+      },
+      "cartridgeLine": "Thread three ancient arches and chase the last light down the ember canyon.",
+      "referenceImageId": "e0196afd52d19dab1f1a5941bcf36ed63e4460b4483e7a01cbd131a33ed17e7c"
+    },
+    "checks": [
+      {
+        "name": "schema",
+        "ok": true,
+        "detail": "strict schema"
+      },
+      {
+        "name": "references",
+        "ok": true,
+        "detail": "5 entities, route ids resolved"
+      },
+      {
+        "name": "bounds",
+        "ok": true,
+        "detail": "radii inside calibrated forgiveness"
+      },
+      {
+        "name": "route",
+        "ok": true,
+        "detail": "z 10 → 100 → 210 → 320 → 430"
+      },
+      {
+        "name": "pilot",
+        "ok": true,
+        "detail": "pilot wins in 10.4s of 40s"
+      },
+      {
+        "name": "prompt",
+        "ok": true,
+        "detail": "1038 chars"
+      }
+    ]
+  },
+  "candidate": {
+    "version": 1,
+    "title": "Arches of the Ember Canyon",
+    "tagline": "Glide beneath three colossal sandstone arches as sunset floods the canyon floor.",
+    "world": {
+      "basePrompt": "A vast desert canyon of layered red sandstone stretches ahead, its walls glowing amber and rust under a low golden sun. Three immense natural rock arches span the gorge in succession, each framing the next, with the farthest arch silhouetted against a blinding sunset glow. Fine golden sand ripples across the canyon floor, scattered with boulders and tufts of dry sagebrush. Warm haze drifts between the cliffs, clouds burn orange and pink overhead, and the passage continues forward through the arches toward the bright horizon.",
+      "landmarks": [
+        {
+          "id": "grand-arch",
+          "description": "The nearest colossal sandstone arch spanning the canyon overhead"
+        },
+        {
+          "id": "middle-arch",
+          "description": "A second weathered rock arch framing the sunset glow"
+        },
+        {
+          "id": "far-arch",
+          "description": "The smallest distant arch silhouetted against the bright horizon"
+        },
+        {
+          "id": "sunset-gap",
+          "description": "The blinding golden gap between far cliffs where the sun sets"
+        }
+      ],
+      "perspective": "first_person"
+    },
+    "mechanic": {
+      "kind": "glide",
+      "lift": 1,
+      "drag": 1,
+      "turnRate": 1,
+      "boost": 1
+    },
+    "entities": [
+      {
+        "id": "canyon-mouth",
+        "kind": "start",
+        "position": [
+          0,
+          12,
+          10
+        ],
+        "radius": 4,
+        "label": "Canyon Mouth Launch"
+      },
+      {
+        "id": "grand-arch-ring",
+        "kind": "checkpoint",
+        "position": [
+          -8,
+          22,
+          100
+        ],
+        "radius": 14,
+        "label": "Beneath the Grand Arch"
+      },
+      {
+        "id": "middle-arch-ring",
+        "kind": "checkpoint",
+        "position": [
+          10,
+          18,
+          210
+        ],
+        "radius": 12,
+        "label": "Through the Middle Arch"
+      },
+      {
+        "id": "far-arch-ring",
+        "kind": "checkpoint",
+        "position": [
+          -6,
+          24,
+          320
+        ],
+        "radius": 12,
+        "label": "Under the Far Arch"
+      },
+      {
+        "id": "sunset-gap-goal",
+        "kind": "goal",
+        "position": [
+          0,
+          20,
+          430
+        ],
+        "radius": 16,
+        "label": "Sunset Gap Goal"
+      }
+    ],
+    "rules": {
+      "durationSeconds": 40,
+      "requiredCheckpointIds": [
+        "grand-arch-ring",
+        "middle-arch-ring",
+        "far-arch-ring"
+      ],
+      "goalEntityId": "sunset-gap-goal",
+      "respawnBehindDistance": 15
+    },
+    "cartridgeLine": "Thread three ancient arches and chase the last light down the ember canyon."
+  }
+}

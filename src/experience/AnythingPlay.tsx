@@ -12,8 +12,12 @@ import {
   type GlideInput,
   type GlideState,
 } from "../game/glide";
-import { loadFixtureImage, seedFromImageId } from "../seed/image";
-import { composeWorldPrompt, FIXTURE_WORLD } from "../world/prompts";
+import { courseOf, type ValidatedGameSpec } from "../game/spec";
+import { compileGame } from "../compiler/client";
+import { clampCodePoints, DIRECTION_MAX_CODE_POINTS } from "../compiler/request";
+import { fallbackSpec } from "../game/fallback";
+import { loadFixtureImage } from "../seed/image";
+import { composeWorldPrompt } from "../world/prompts";
 import {
   controlsFromInput,
   reactorTurnDeg,
@@ -25,7 +29,7 @@ import {
 import { FakeWorld } from "../world/fake";
 import { LingbotWorld, LiveWorldProvider } from "../world/lingbot";
 import { installDebug, type DebugSnapshot } from "../testing/debug";
-import { initialPhase, reducer, type Phase } from "./state";
+import { initialPhase, reducer, type Phase, type SpecSource, type StagingStepName } from "./state";
 import { formatRemaining, PressButton, SeedWell, StagingSteps, StatusPill, Wordmark } from "./stages";
 
 const MAX_FRAME_GAP = 0.1;
@@ -60,6 +64,10 @@ const CONTROL_KEYS: Record<"left" | "right" | "up" | "down", readonly string[]> 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+}
+
+function goalLabel(spec: ValidatedGameSpec): string {
+  return spec.entities.find((e) => e.kind === "goal")?.label ?? "the goal";
 }
 
 function drawRoute(
@@ -111,9 +119,18 @@ function drawRoute(
   }
 }
 
-export function AnythingPlay({ mode, operator }: { mode: "fake" | "live"; operator: boolean }) {
+export function AnythingPlay({
+  mode,
+  operator,
+  compiler,
+}: {
+  mode: "fake" | "live";
+  operator: boolean;
+  compiler: "on" | "off";
+}) {
   const [phase, dispatch] = useReducer(reducer, initialPhase);
   const [driver, setDriver] = useState<WorldDriver | null>(null);
+  const [direction, setDirection] = useState("");
   const [hud, setHud] = useState<Hud>({ elapsed: 0, checkpoints: 0, boost: false, status: "running" });
   const worldStatus = useWorldStatus(driver);
 
@@ -133,6 +150,7 @@ export function AnythingPlay({ mode, operator }: { mode: "fake" | "live"; operat
   const stageStartAtRef = useRef<number | null>(null);
   const inputToOverlayRef = useRef<number[]>([]);
   const seedRequestedRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const handleDriver = useCallback((next: WorldDriver) => {
     driverRef.current = next;
@@ -192,11 +210,58 @@ export function AnythingPlay({ mode, operator }: { mode: "fake" | "live"; operat
       );
   }, []);
 
+  const stagingRunRef = useRef(0);
+
   useEffect(() => {
     if (phase.name !== "staging") return;
-    let cancelled = false;
+    if (stagingRunRef.current !== 0) return;
+    const runId = ++stagingRunRef.current;
+    const controller = new AbortController();
+    abortRef.current = controller;
     stageStartAtRef.current = performance.now();
+    const stillRunning = () =>
+      stagingRunRef.current === runId && phaseRef.current.name === "staging";
+    const progress = (
+      step: StagingStepName,
+      status: "active" | "passed" | "repairing" | "fallback" | "failed",
+      detail?: string,
+    ) => {
+      if (!stillRunning()) return;
+      dispatch({
+        type: "STAGE_STEP",
+        name: step,
+        status: status === "repairing" ? "active" : status,
+        detail: status === "repairing" ? "Repairing the rules" : detail,
+      });
+    };
     const run = async () => {
+      let spec = phase.spec;
+      let source: SpecSource | null = phase.source;
+      let label: string | null = phase.label;
+      let checks = phase.checks;
+      if (!spec) {
+        if (compiler === "off") {
+          progress("rules", "fallback", "Compiler disabled");
+          progress("testing", "fallback", "Compiler disabled");
+          spec = fallbackSpec(phase.seed);
+          source = "fallback";
+          label = "offline";
+        } else {
+          const outcome = await compileGame(
+            phase.seed,
+            phase.direction,
+            (p) => progress(p.step, p.status, p.detail),
+            controller.signal,
+          );
+          spec = outcome.spec;
+          source = outcome.source;
+          label = outcome.label;
+          checks = outcome.checks;
+        }
+        if (!stillRunning()) return;
+        dispatch({ type: "COMPILED", spec, source, label, checks });
+      }
+      progress("warming", "active");
       let target = driverRef.current;
       const deadline = performance.now() + 5000;
       while (!target && performance.now() < deadline) {
@@ -206,22 +271,23 @@ export function AnythingPlay({ mode, operator }: { mode: "fake" | "live"; operat
       if (!target) throw new Error("World driver unavailable");
       await target.stage({
         image: phase.seed,
-        prompt: composeWorldPrompt(FIXTURE_WORLD.basePrompt, FIXTURE_WORLD.landmarks),
-        seed: seedFromImageId(phase.seed.id),
+        prompt: composeWorldPrompt(spec.world.basePrompt, spec.world.landmarks),
+        seed: spec.world.seed,
       });
+      if (stillRunning()) dispatch({ type: "STAGED" });
     };
-    run()
-      .then(() => {
-        if (!cancelled) dispatch({ type: "STAGED" });
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        dispatch({ type: "STAGE_STEP", name: "warming", status: "failed" });
-        dispatch({ type: "FAIL", message: error instanceof Error ? error.message : String(error) });
-      });
-    return () => {
-      cancelled = true;
-    };
+    run().catch((error: unknown) => {
+      if (!stillRunning()) return;
+      progress("warming", "failed");
+      dispatch({ type: "FAIL", message: error instanceof Error ? error.message : String(error) });
+    });
+  }, [phase, compiler]);
+
+  useEffect(() => {
+    if (phase.name === "staging") return;
+    stagingRunRef.current = 0;
+    abortRef.current?.abort();
+    abortRef.current = null;
   }, [phase]);
 
   useEffect(() => {
@@ -258,11 +324,11 @@ export function AnythingPlay({ mode, operator }: { mode: "fake" | "live"; operat
 
   useEffect(() => {
     if (phase.name !== "playing") return;
-    const course = phase.course;
+    const course = courseOf(phase.spec);
     const world = driverRef.current;
     let state = createGlideState(course);
     runRef.current = state;
-    world?.setTurnRate(reactorTurnDeg(course.mechanic.turnRate));
+    world?.setTurnRate(reactorTurnDeg(phase.spec.mechanic.turnRate));
     world?.setControls(controlsFromInput(inputRef.current));
     lastControlsRef.current = controlsFromInput(inputRef.current);
 
@@ -348,10 +414,26 @@ export function AnythingPlay({ mode, operator }: { mode: "fake" | "live"; operat
       generating: false,
       chunk: 0,
     };
+    const spec = "spec" in currentPhase && currentPhase.spec ? currentPhase.spec : null;
+    const source = "source" in currentPhase ? currentPhase.source : null;
+    const checks = "checks" in currentPhase ? currentPhase.checks : [];
     return {
       phase: currentPhase.name,
       mode,
-      fallbackLevel: mode === "fake" ? 4 : 1,
+      fallbackLevel: mode === "fake" ? 4 : source === "fallback" ? 3 : 1,
+      spec: spec
+        ? {
+            title: spec.title,
+            referenceImageId: spec.referenceImageId,
+            seed: spec.world.seed,
+            turnRate: spec.mechanic.turnRate,
+            source: source ?? "unknown",
+            checks:
+              checks.length > 0
+                ? `${checks.filter((c) => c.ok).length}/${checks.length}`
+                : null,
+          }
+        : null,
       run: run
         ? {
             status: run.status,
@@ -387,6 +469,10 @@ export function AnythingPlay({ mode, operator }: { mode: "fake" | "live"; operat
 
   const playing = phase.name === "playing";
   const finished = phase.name === "finished";
+  const playSpec = (playing || finished) && "spec" in phase ? phase.spec : null;
+  const playCourse = playSpec ? courseOf(playSpec) : null;
+  const sourceLabel = (source: SpecSource, label: string) =>
+    source === "fallback" ? "Prepared game (compiler unavailable)" : `${source === "live" ? "Live" : "Repaired"} rules · ${label}`;
 
   return (
     <div className="experience">
@@ -410,15 +496,21 @@ export function AnythingPlay({ mode, operator }: { mode: "fake" | "live"; operat
           <SeedWell seed={phase.seed} />
           <input
             className="direction"
-            disabled
-            placeholder="Direction arrives with the live compiler"
-            aria-label="Direction (not yet active)"
+            aria-label="Direction (optional)"
+            placeholder="Optional direction for the compiler…"
+            value={direction}
+            onChange={(event) => setDirection(event.target.value)}
           />
           <button
             type="button"
             className="primary"
             disabled={!phase.seed}
-            onClick={() => dispatch({ type: "MAKE_PLAYABLE" })}
+            onClick={() =>
+              dispatch({
+                type: "MAKE_PLAYABLE",
+                direction: clampCodePoints(direction, DIRECTION_MAX_CODE_POINTS),
+              })
+            }
           >
             Make playable
           </button>
@@ -446,21 +538,40 @@ export function AnythingPlay({ mode, operator }: { mode: "fake" | "live"; operat
         <main className="stage">
           <Wordmark />
           <SeedWell seed={phase.seed} />
-          <h2>Prepared Glide course</h2>
-          <p className="muted">Fly through 3 arches, then the moon gate.</p>
+          <h2>{phase.spec.title}</h2>
+          <p className="muted">{phase.spec.tagline}</p>
+          <dl className="decision">
+            <div>
+              <dt>WORLD</dt>
+              <dd>{phase.spec.world.landmarks[0].description}</dd>
+            </div>
+            <div>
+              <dt>GAME</dt>
+              <dd>Glide</dd>
+            </div>
+            <div>
+              <dt>RULE</dt>
+              <dd>Pass 3 rings in order within {phase.spec.rules.durationSeconds}s</dd>
+            </div>
+            <div>
+              <dt>GOAL</dt>
+              <dd>{goalLabel(phase.spec)}</dd>
+            </div>
+          </dl>
+          <p className="pill">{sourceLabel(phase.source, phase.label)}</p>
           <button type="button" className="primary" onClick={() => dispatch({ type: "START_PLAY" })}>
             Start run
           </button>
         </main>
       )}
 
-      {playing && (
+      {playing && playCourse && playSpec && (
         <>
           <div className="hud">
-            <p className="objective">Fly through 3 arches, then the moon gate.</p>
+            <p className="objective">Pass 3 rings, then {goalLabel(playSpec)}</p>
             <p className="hud-stats">
               <span>{hud.checkpoints}/3</span>
-              <span>{formatRemaining(phase.course.rules.durationSeconds - hud.elapsed)}</span>
+              <span>{formatRemaining(playCourse.rules.durationSeconds - hud.elapsed)}</span>
               {hud.boost && <span className="boost">BOOST</span>}
             </p>
           </div>

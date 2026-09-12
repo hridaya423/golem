@@ -140,6 +140,7 @@ export function FakeWorld({ onDriver }: { onDriver: (driver: WorldDriver) => voi
         controls = IDLE_CONTROLS;
         store.set({ lastCommandAt: performance.now() });
       },
+      reconnect: () => Promise.resolve(),
       reset() {
         if (chunkTimer) clearInterval(chunkTimer);
         chunkTimer = null;

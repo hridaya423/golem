@@ -1,36 +1,339 @@
 {
   "timeline": [
     {
-      "label": "staging-failed",
-      "at": 1789219700587,
+      "label": "00-straight",
+      "at": 1789222126371,
       "snapshot": {
-        "phase": "error",
+        "phase": "playing",
         "mode": "live",
         "fallbackLevel": 1,
-        "run": null,
+        "spec": {
+          "title": "Ink Sea of Stone Moons",
+          "referenceImageId": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
+          "seed": 1941181010,
+          "turnRate": 1,
+          "source": "live",
+          "checks": "6/6"
+        },
+        "run": {
+          "status": "running",
+          "elapsed": 2.4833333333333294,
+          "activeGate": 0,
+          "completed": [],
+          "position": [
+            0,
+            20,
+            59.59999999999985
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "speed": 24,
+          "respawns": 0
+        },
         "world": {
           "kind": "live",
-          "connection": "disconnected",
-          "hasImage": false,
-          "hasPrompt": false,
-          "generating": false,
-          "chunk": 0,
-          "error": "unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}"
+          "connection": "ready",
+          "hasImage": true,
+          "hasPrompt": true,
+          "generating": true,
+          "chunk": 5,
+          "sessionId": "90bf1037-8243-4eca-b058-380b96d2bcc4",
+          "error": "unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}",
+          "lastChunkAt": 53237.5,
+          "framesPerChunk": 24,
+          "lastChunkAction": "w",
+          "firstFrameAt": 50442.59999999963,
+          "lastCommandAt": 50864
         },
         "metrics": {
           "inputToOverlayMs": [],
-          "commandToChunkMs": null,
-          "firstFrameMs": null
+          "commandToChunkMs": 2373.5,
+          "firstFrameMs": 50213.90000000037
+        }
+      }
+    },
+    {
+      "label": "01-turning-1s",
+      "at": 1789222127638,
+      "snapshot": {
+        "phase": "playing",
+        "mode": "live",
+        "fallbackLevel": 1,
+        "spec": {
+          "title": "Ink Sea of Stone Moons",
+          "referenceImageId": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
+          "seed": 1941181010,
+          "turnRate": 1,
+          "source": "live",
+          "checks": "6/6"
+        },
+        "run": {
+          "status": "running",
+          "elapsed": 3.7499999999999916,
+          "activeGate": 0,
+          "completed": [],
+          "position": [
+            9.03549867384774,
+            20,
+            87.58124469695696
+          ],
+          "yaw": 0.7800000000000006,
+          "pitch": 0,
+          "speed": 24,
+          "respawns": 0
+        },
+        "world": {
+          "kind": "live",
+          "connection": "ready",
+          "hasImage": true,
+          "hasPrompt": true,
+          "generating": true,
+          "chunk": 7,
+          "sessionId": "90bf1037-8243-4eca-b058-380b96d2bcc4",
+          "error": "unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}",
+          "lastChunkAt": 54406.699999999255,
+          "framesPerChunk": 24,
+          "lastChunkAction": "w+right",
+          "firstFrameAt": 50442.59999999963,
+          "lastCommandAt": 53635.5
+        },
+        "metrics": {
+          "inputToOverlayMs": [
+            6.200000001488661
+          ],
+          "commandToChunkMs": 771.1999999992549,
+          "firstFrameMs": 50213.90000000037
+        }
+      }
+    },
+    {
+      "label": "02-turning-2s",
+      "at": 1789222128885,
+      "snapshot": {
+        "phase": "playing",
+        "mode": "live",
+        "fallbackLevel": 1,
+        "spec": {
+          "title": "Ink Sea of Stone Moons",
+          "referenceImageId": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
+          "seed": 1941181010,
+          "turnRate": 1,
+          "source": "live",
+          "checks": "6/6"
+        },
+        "run": {
+          "status": "running",
+          "elapsed": 4.999999999999988,
+          "activeGate": 0,
+          "completed": [],
+          "position": [
+            36.60114183416052,
+            20,
+            96.01163111091464
+          ],
+          "yaw": 1.754999999999995,
+          "pitch": 0,
+          "speed": 24,
+          "respawns": 0
+        },
+        "world": {
+          "kind": "live",
+          "connection": "ready",
+          "hasImage": true,
+          "hasPrompt": true,
+          "generating": true,
+          "chunk": 9,
+          "sessionId": "90bf1037-8243-4eca-b058-380b96d2bcc4",
+          "error": "unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}",
+          "lastChunkAt": 55439.79999999888,
+          "framesPerChunk": 24,
+          "lastChunkAction": "w+right",
+          "firstFrameAt": 50442.59999999963,
+          "lastCommandAt": 53635.5
+        },
+        "metrics": {
+          "inputToOverlayMs": [
+            6.200000001488661
+          ],
+          "commandToChunkMs": 1804.2999999988824,
+          "firstFrameMs": 50213.90000000037
+        }
+      }
+    },
+    {
+      "label": "03-released",
+      "at": 1789222130633,
+      "snapshot": {
+        "phase": "playing",
+        "mode": "live",
+        "fallbackLevel": 1,
+        "spec": {
+          "title": "Ink Sea of Stone Moons",
+          "referenceImageId": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
+          "seed": 1941181010,
+          "turnRate": 1,
+          "source": "live",
+          "checks": "6/6"
+        },
+        "run": {
+          "status": "running",
+          "elapsed": 6.749999999999981,
+          "activeGate": 0,
+          "completed": [],
+          "position": [
+            0,
+            20,
+            6.000000000000001
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "speed": 24,
+          "respawns": 1
+        },
+        "world": {
+          "kind": "live",
+          "connection": "ready",
+          "hasImage": true,
+          "hasPrompt": true,
+          "generating": true,
+          "chunk": 13,
+          "sessionId": "90bf1037-8243-4eca-b058-380b96d2bcc4",
+          "error": "unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}",
+          "lastChunkAt": 57523.699999999255,
+          "framesPerChunk": 24,
+          "lastChunkAction": "w",
+          "firstFrameAt": 50442.59999999963,
+          "lastCommandAt": 56128.89999999851
+        },
+        "metrics": {
+          "inputToOverlayMs": [
+            6.200000001488661
+          ],
+          "commandToChunkMs": 1394.800000000745,
+          "firstFrameMs": 50213.90000000037
+        }
+      }
+    },
+    {
+      "label": "04-turned-back",
+      "at": 1789222132906,
+      "snapshot": {
+        "phase": "playing",
+        "mode": "live",
+        "fallbackLevel": 1,
+        "spec": {
+          "title": "Ink Sea of Stone Moons",
+          "referenceImageId": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
+          "seed": 1941181010,
+          "turnRate": 1,
+          "source": "live",
+          "checks": "6/6"
+        },
+        "run": {
+          "status": "running",
+          "elapsed": 9.016666666666694,
+          "activeGate": 0,
+          "completed": [],
+          "position": [
+            -30.63660223987598,
+            20,
+            42.969163459649835
+          ],
+          "yaw": -1.5599999999999965,
+          "pitch": 0,
+          "speed": 24,
+          "respawns": 1
+        },
+        "world": {
+          "kind": "live",
+          "connection": "ready",
+          "hasImage": true,
+          "hasPrompt": true,
+          "generating": true,
+          "chunk": 17,
+          "sessionId": "90bf1037-8243-4eca-b058-380b96d2bcc4",
+          "error": "unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}",
+          "lastChunkAt": 59593.59999999963,
+          "framesPerChunk": 24,
+          "lastChunkAction": "w+left",
+          "firstFrameAt": 50442.59999999963,
+          "lastCommandAt": 59903.89999999851
+        },
+        "metrics": {
+          "inputToOverlayMs": [
+            6.200000001488661,
+            8.599999999998545
+          ],
+          "commandToChunkMs": -310.2999999988824,
+          "firstFrameMs": 50213.90000000037
+        }
+      }
+    },
+    {
+      "label": "05-settled",
+      "at": 1789222135169,
+      "snapshot": {
+        "phase": "playing",
+        "mode": "live",
+        "fallbackLevel": 1,
+        "spec": {
+          "title": "Ink Sea of Stone Moons",
+          "referenceImageId": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
+          "seed": 1941181010,
+          "turnRate": 1,
+          "source": "live",
+          "checks": "6/6"
+        },
+        "run": {
+          "status": "running",
+          "elapsed": 11.283333333333474,
+          "activeGate": 0,
+          "completed": [],
+          "position": [
+            0,
+            20,
+            14.800000000000008
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "speed": 24,
+          "respawns": 2
+        },
+        "world": {
+          "kind": "live",
+          "connection": "ready",
+          "hasImage": true,
+          "hasPrompt": true,
+          "generating": true,
+          "chunk": 21,
+          "sessionId": "90bf1037-8243-4eca-b058-380b96d2bcc4",
+          "error": "unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}",
+          "lastChunkAt": 61681.79999999888,
+          "framesPerChunk": 24,
+          "lastChunkAction": "w",
+          "firstFrameAt": 50442.59999999963,
+          "lastCommandAt": 59903.89999999851
+        },
+        "metrics": {
+          "inputToOverlayMs": [
+            6.200000001488661,
+            8.599999999998545
+          ],
+          "commandToChunkMs": 1777.9000000003725,
+          "firstFrameMs": 50213.90000000037
         }
       }
     }
   ],
   "consoleErrors": [
     "error: Failed to load resource: the server responded with a status of 429 ()",
-    "error: [Reactor.ReactorProvider] autoConnect failed: ReactorError: unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n    at toReactorError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:878:12)\n    at Reactor.captureError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:2200:23)\n    at Reactor.connect (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:1633:24)",
+    "error: [Reactor.ReactorProvider] autoConnect failed: ReactorError: unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n    at toReactorError (http://127.0.0.1:3000/_next/static/chunks/14fr_%40reactor-team_js-sdk_dist_index_0p181u2.js:245:12)\n    at Reactor.captureError (http://127.0.0.1:3000/_next/static/chunks/14fr_%40reactor-team_js-sdk_dist_index_0p181u2.js:1567:23)\n    at Reactor.connect (http://127.0.0.1:3000/_next/static/chunks/14fr_%40reactor-team_js-sdk_dist_index_0p181u2.js:1000:24)",
     "error: Failed to load resource: the server responded with a status of 429 ()",
-    "error: [Reactor.ReactorProvider] autoConnect failed: ReactorError: unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n    at toReactorError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:878:12)\n    at Reactor.captureError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:2200:23)\n    at Reactor.connect (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:1633:24)",
+    "error: [Reactor.ReactorProvider] autoConnect failed: ReactorError: unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n    at toReactorError (http://127.0.0.1:3000/_next/static/chunks/14fr_%40reactor-team_js-sdk_dist_index_0p181u2.js:245:12)\n    at Reactor.captureError (http://127.0.0.1:3000/_next/static/chunks/14fr_%40reactor-team_js-sdk_dist_index_0p181u2.js:1567:23)\n    at Reactor.connect (http://127.0.0.1:3000/_next/static/chunks/14fr_%40reactor-team_js-sdk_dist_index_0p181u2.js:1000:24)",
     "error: Failed to load resource: the server responded with a status of 429 ()",
-    "error: [Reactor.ReactorProvider] autoConnect failed: ReactorError: unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n    at toReactorError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:878:12)\n    at Reactor.captureError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:2200:23)\n    at Reactor.connect (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:1633:24)"
+    "error: [Reactor.ReactorProvider] autoConnect failed: ReactorError: unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n    at toReactorError (http://127.0.0.1:3000/_next/static/chunks/14fr_%40reactor-team_js-sdk_dist_index_0p181u2.js:245:12)\n    at Reactor.captureError (http://127.0.0.1:3000/_next/static/chunks/14fr_%40reactor-team_js-sdk_dist_index_0p181u2.js:1567:23)\n    at Reactor.connect (http://127.0.0.1:3000/_next/static/chunks/14fr_%40reactor-team_js-sdk_dist_index_0p181u2.js:1000:24)",
+    "error: Failed to load resource: the server responded with a status of 429 ()",
+    "error: Failed to load resource: the server responded with a status of 429 ()",
+    "error: Failed to load resource: the server responded with a status of 429 ()"
   ]
 }

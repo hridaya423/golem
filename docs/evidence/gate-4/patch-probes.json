@@ -3,38 +3,38 @@
   "patchResults": [
     {
       "transcript": "Double the turn rate",
-      "elapsedMs": 1322.7333750000007,
+      "elapsedMs": 1842.7971670000006,
       "schemaOk": true,
       "value": {
         "version": 1,
         "mechanic": "glide",
         "operation": "multiply_turn_rate",
         "factor": 2,
-        "cartridgeLine": "Three arches, one moon gate—wings bite twice as quick through the turn."
+        "cartridgeLine": "Three arches, one moon gate. Turn twice as swift through the wind."
       }
     },
     {
       "transcript": "make it turn way slower and smoother",
-      "elapsedMs": 1971.3525,
+      "elapsedMs": 1817.783083000002,
       "schemaOk": true,
       "value": {
         "version": 1,
         "mechanic": "glide",
         "operation": "multiply_turn_rate",
         "factor": 0.5,
-        "cartridgeLine": "Glide turns drift half as fast—smooth arcs, wide moonlit curves."
+        "cartridgeLine": "Three arches, one moon gate—turns drift half as fast, smooth as moonlit water."
       }
     },
     {
       "transcript": "twice as sharp turns please",
-      "elapsedMs": 1341.6385839999984,
+      "elapsedMs": 1309.4644579999986,
       "schemaOk": true,
       "value": {
         "version": 1,
         "mechanic": "glide",
         "operation": "multiply_turn_rate",
         "factor": 2,
-        "cartridgeLine": "Three arches, one moon gate—turns bite twice as sharp."
+        "cartridgeLine": "Turn rate doubled: carve the arches twice as sharp beneath the moon gate."
       }
     }
   ]

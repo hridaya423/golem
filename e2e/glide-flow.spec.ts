@@ -5,6 +5,7 @@ type Snapshot = {
   phase: string;
   mode: string;
   fallbackLevel: number;
+  spec: null | { title: string; referenceImageId: string; seed: number; source: string };
   run: null | {
     status: string;
     elapsed: number;
@@ -26,7 +27,7 @@ test("fake world glide flow: stage, play with keyboard, win in order", async ({ 
     if (message.type() === "error") errors.push(`console.error: ${message.text()}`);
   });
 
-  await page.goto("/?world=fake");
+  await page.goto("/?world=fake&compiler=off");
   await expect(
     page.getByRole("heading", { name: "ANYTHING//PLAY", exact: true }),
   ).toBeVisible();
@@ -92,6 +93,10 @@ test("fake world glide flow: stage, play with keyboard, win in order", async ({ 
   expect(final!.run?.completed).toEqual(["cp1", "cp2", "cp3", "goal"]);
   expect(final!.fallbackLevel).toBe(4);
   expect(final!.world.kind).toBe("fake");
+  expect(final!.spec?.source).toBe("fallback");
+  expect(final!.spec?.referenceImageId).toBe(
+    "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
+  );
   await expect(page.getByText("Course complete")).toBeVisible();
   expect(errors).toEqual([]);
 });

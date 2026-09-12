@@ -1,0 +1,17 @@
+{
+  "taskType": "imageInference",
+  "taskUUID": "a8e3d1bc-6c26-4d93-8b78-138dd1af82c5",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "positivePrompt": "A landscape 1664 by 960 reference frame for first-person forward gliding down a rain-slick neon canyon street at night. This is a world illustration, not a website or interface. Towering dark glass and concrete buildings on both sides recede toward a clear level horizon at 45 percent of image height; wet asphalt reflects magenta, cyan and amber signage. Three and only three large glowing circular gantry rings span the street ahead at visibly different distances: a large near ring slightly right, a medium ring farther slightly left, a small third ring near center. A distant bright elevated rail station arch beyond them forms the destination. The street center is open and navigable; density and detail concentrate on the flanking facades. Camera floating steadily at second-floor height, eye level, no visible person or vehicle. Cinematic photographic realism, light rain haze, sharp bokeh-free focus. Exactly three route rings plus one distant arch destination. No text, legible words, logos, UI, borders, HUD, humans, crowds, weapons, or tiny precision platforms. Fill the entire frame.",
+  "width": 1664,
+  "height": 960,
+  "numberResults": 1,
+  "outputType": "URL",
+  "outputFormat": "WEBP",
+  "deliveryMethod": "sync",
+  "settings": {
+    "quality": "high",
+    "background": "opaque"
+  },
+  "includeCost": true
+}

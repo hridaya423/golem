@@ -1,0 +1,247 @@
+{
+  "label": "Kimi K3 on Modal",
+  "elapsedMs": 5113.59325,
+  "imageId": "cb1ade1074f0e803cc10b14900f3844c02b00bee154c50abc6b586daa00da896",
+  "schemaOk": true,
+  "validated": {
+    "ok": true,
+    "spec": {
+      "version": 1,
+      "title": "Neon Ring Run",
+      "tagline": "Glide a rain-slick avenue through magenta, cyan, and gold transit rings.",
+      "world": {
+        "basePrompt": "A rain-soaked cyberpunk avenue stretches ahead at night, its wet asphalt mirroring magenta, cyan, and gold neon. Towering glass skyscrapers flank the street, their facades glowing with pink light panels and cool blue vertical strips. Massive circular transit rings span the road in sequence: a huge magenta ring, a cyan ring, and a smaller golden ring beyond, all mounted on dark steel gantries. Rooftop trees and warm window light soften the concrete edges. Mist hangs between distant spires, and the avenue continues forward into a glowing vanishing point of stacked rings and shimmering rain.",
+        "landmarks": [
+          {
+            "id": "magenta-ring",
+            "description": "Huge magenta neon ring spanning the avenue on a steel gantry"
+          },
+          {
+            "id": "cyan-ring",
+            "description": "Mid-distance cyan neon ring between the towers"
+          },
+          {
+            "id": "gold-ring",
+            "description": "Smaller golden ring glowing far down the street"
+          },
+          {
+            "id": "wet-avenue",
+            "description": "Rain-slick avenue reflecting pink and blue neon"
+          }
+        ],
+        "perspective": "first_person",
+        "seed": 3407535632
+      },
+      "mechanic": {
+        "kind": "glide",
+        "lift": 1,
+        "drag": 1,
+        "turnRate": 1,
+        "boost": 1
+      },
+      "entities": [
+        {
+          "id": "street-launch",
+          "kind": "start",
+          "position": [
+            0,
+            8,
+            0
+          ],
+          "radius": 4,
+          "label": "Wet Avenue Launch"
+        },
+        {
+          "id": "magenta-gate",
+          "kind": "checkpoint",
+          "position": [
+            8,
+            16,
+            110
+          ],
+          "radius": 14,
+          "label": "Magenta Ring"
+        },
+        {
+          "id": "cyan-gate",
+          "kind": "checkpoint",
+          "position": [
+            -10,
+            12,
+            220
+          ],
+          "radius": 12,
+          "label": "Cyan Ring"
+        },
+        {
+          "id": "gold-gate",
+          "kind": "checkpoint",
+          "position": [
+            6,
+            18,
+            330
+          ],
+          "radius": 10,
+          "label": "Gold Ring"
+        },
+        {
+          "id": "spire-goal",
+          "kind": "goal",
+          "position": [
+            0,
+            14,
+            440
+          ],
+          "radius": 16,
+          "label": "Glowing Spire Terminus"
+        }
+      ],
+      "rules": {
+        "durationSeconds": 40,
+        "requiredCheckpointIds": [
+          "magenta-gate",
+          "cyan-gate",
+          "gold-gate"
+        ],
+        "goalEntityId": "spire-goal",
+        "respawnBehindDistance": 15
+      },
+      "cartridgeLine": "Thread the neon rings above the rain-mirrored avenue before the lights fade.",
+      "referenceImageId": "cb1ade1074f0e803cc10b14900f3844c02b00bee154c50abc6b586daa00da896"
+    },
+    "checks": [
+      {
+        "name": "schema",
+        "ok": true,
+        "detail": "strict schema"
+      },
+      {
+        "name": "references",
+        "ok": true,
+        "detail": "5 entities, route ids resolved"
+      },
+      {
+        "name": "bounds",
+        "ok": true,
+        "detail": "radii inside calibrated forgiveness"
+      },
+      {
+        "name": "route",
+        "ok": true,
+        "detail": "z 0 → 110 → 220 → 330 → 440"
+      },
+      {
+        "name": "pilot",
+        "ok": true,
+        "detail": "pilot wins in 10.9s of 40s"
+      },
+      {
+        "name": "prompt",
+        "ok": true,
+        "detail": "1062 chars"
+      }
+    ]
+  },
+  "candidate": {
+    "version": 1,
+    "title": "Neon Ring Run",
+    "tagline": "Glide a rain-slick avenue through magenta, cyan, and gold transit rings.",
+    "world": {
+      "basePrompt": "A rain-soaked cyberpunk avenue stretches ahead at night, its wet asphalt mirroring magenta, cyan, and gold neon. Towering glass skyscrapers flank the street, their facades glowing with pink light panels and cool blue vertical strips. Massive circular transit rings span the road in sequence: a huge magenta ring, a cyan ring, and a smaller golden ring beyond, all mounted on dark steel gantries. Rooftop trees and warm window light soften the concrete edges. Mist hangs between distant spires, and the avenue continues forward into a glowing vanishing point of stacked rings and shimmering rain.",
+      "landmarks": [
+        {
+          "id": "magenta-ring",
+          "description": "Huge magenta neon ring spanning the avenue on a steel gantry"
+        },
+        {
+          "id": "cyan-ring",
+          "description": "Mid-distance cyan neon ring between the towers"
+        },
+        {
+          "id": "gold-ring",
+          "description": "Smaller golden ring glowing far down the street"
+        },
+        {
+          "id": "wet-avenue",
+          "description": "Rain-slick avenue reflecting pink and blue neon"
+        }
+      ],
+      "perspective": "first_person"
+    },
+    "mechanic": {
+      "kind": "glide",
+      "lift": 1,
+      "drag": 1,
+      "turnRate": 1,
+      "boost": 1
+    },
+    "entities": [
+      {
+        "id": "street-launch",
+        "kind": "start",
+        "position": [
+          0,
+          8,
+          0
+        ],
+        "radius": 4,
+        "label": "Wet Avenue Launch"
+      },
+      {
+        "id": "magenta-gate",
+        "kind": "checkpoint",
+        "position": [
+          8,
+          16,
+          110
+        ],
+        "radius": 14,
+        "label": "Magenta Ring"
+      },
+      {
+        "id": "cyan-gate",
+        "kind": "checkpoint",
+        "position": [
+          -10,
+          12,
+          220
+        ],
+        "radius": 12,
+        "label": "Cyan Ring"
+      },
+      {
+        "id": "gold-gate",
+        "kind": "checkpoint",
+        "position": [
+          6,
+          18,
+          330
+        ],
+        "radius": 10,
+        "label": "Gold Ring"
+      },
+      {
+        "id": "spire-goal",
+        "kind": "goal",
+        "position": [
+          0,
+          14,
+          440
+        ],
+        "radius": 16,
+        "label": "Glowing Spire Terminus"
+      }
+    ],
+    "rules": {
+      "durationSeconds": 40,
+      "requiredCheckpointIds": [
+        "magenta-gate",
+        "cyan-gate",
+        "gold-gate"
+      ],
+      "goalEntityId": "spire-goal",
+      "respawnBehindDistance": 15
+    },
+    "cartridgeLine": "Thread the neon rings above the rain-mirrored avenue before the lights fade. "
+  }
+}

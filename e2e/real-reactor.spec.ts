@@ -6,7 +6,7 @@ const EVIDENCE_DIR = "docs/evidence/gate-1";
 
 test.skip(process.env.REAL_REACTOR !== "1", "live Reactor smoke is opt-in via REAL_REACTOR=1");
 
-test.setTimeout(240_000);
+test.setTimeout(300_000);
 test.use({ video: "on" });
 
 test("live Reactor world: stage fixture, hold a turn, record coupling telemetry", async ({ page }, testInfo) => {
@@ -29,7 +29,7 @@ test("live Reactor world: stage fixture, hold a turn, record coupling telemetry"
   await page.goto("/?operator=1");
   await page.getByRole("button", { name: "Make playable" }).click();
   try {
-    await expect(page.getByRole("button", { name: "Start run" })).toBeVisible({ timeout: 150_000 });
+    await expect(page.getByRole("button", { name: "Start run" })).toBeVisible({ timeout: 200_000 });
   } catch (error) {
     await mark("staging-failed");
     writeFileSync(path.join(EVIDENCE_DIR, "live-timeline.json"), JSON.stringify({ timeline, consoleErrors }, null, 2));

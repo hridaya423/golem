@@ -1,31 +1,169 @@
 {
   "label": "Kimi K3 on Modal",
-  "elapsedMs": 6398.058417,
+  "elapsedMs": 8549.176791,
   "imageId": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
   "schemaOk": true,
-  "validated": null,
+  "validated": {
+    "ok": true,
+    "spec": {
+      "version": 1,
+      "title": "Ink Moon Archipelago",
+      "tagline": "Glide through painted stone arches above a mist-washed ink sea toward the crescent moon.",
+      "world": {
+        "basePrompt": "A vast monochrome ink-wash seascape stretches ahead: colossal weathered stone arches rise from calm grey water, their crowns tufted with pine trees. Sheer cliffs with thin waterfalls flank the route, floating rock islands drift in the mist, and layered mountain silhouettes fade into a pale wash sky. Far ahead a slender crescent moon hangs over the horizon, framed by the arches. Soft fog rolls across the water, brushstroke clouds streak the sky, and the scene continues in deepening washes of grey toward the moonlit distance.",
+        "landmarks": [
+          {
+            "id": "great-arch",
+            "description": "The largest mossy stone arch rising from the water, crowned with pine trees"
+          },
+          {
+            "id": "twin-arches",
+            "description": "Two smaller stone arches standing side by side in the middle distance"
+          },
+          {
+            "id": "crescent-moon",
+            "description": "A slender crescent moon hovering low over the misty horizon"
+          },
+          {
+            "id": "waterfall-cliffs",
+            "description": "Sheer ink-dark cliffs with thin waterfalls on both sides of the channel"
+          }
+        ],
+        "perspective": "first_person",
+        "seed": 1941181010
+      },
+      "mechanic": {
+        "kind": "glide",
+        "lift": 1,
+        "drag": 1,
+        "turnRate": 1,
+        "boost": 1
+      },
+      "entities": [
+        {
+          "id": "mist-launch",
+          "kind": "start",
+          "position": [
+            0,
+            18,
+            10
+          ],
+          "radius": 4,
+          "label": "Misty channel between the waterfall cliffs"
+        },
+        {
+          "id": "great-arch-ring",
+          "kind": "checkpoint",
+          "position": [
+            -8,
+            22,
+            100
+          ],
+          "radius": 14,
+          "label": "Through the great pine-crowned arch"
+        },
+        {
+          "id": "twin-arch-ring",
+          "kind": "checkpoint",
+          "position": [
+            14,
+            16,
+            200
+          ],
+          "radius": 12,
+          "label": "Between the twin arches"
+        },
+        {
+          "id": "floating-isle-ring",
+          "kind": "checkpoint",
+          "position": [
+            -10,
+            26,
+            300
+          ],
+          "radius": 12,
+          "label": "Past the drifting floating islands"
+        },
+        {
+          "id": "crescent-goal",
+          "kind": "goal",
+          "position": [
+            0,
+            20,
+            400
+          ],
+          "radius": 16,
+          "label": "Beneath the crescent moon"
+        }
+      ],
+      "rules": {
+        "durationSeconds": 40,
+        "requiredCheckpointIds": [
+          "great-arch-ring",
+          "twin-arch-ring",
+          "floating-isle-ring"
+        ],
+        "goalEntityId": "crescent-goal",
+        "respawnBehindDistance": 15
+      },
+      "cartridgeLine": "One brush, one sea of mist, three arches between you and the crescent moon. Fly the ink.",
+      "referenceImageId": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42"
+    },
+    "checks": [
+      {
+        "name": "schema",
+        "ok": true,
+        "detail": "strict schema"
+      },
+      {
+        "name": "references",
+        "ok": true,
+        "detail": "5 entities, route ids resolved"
+      },
+      {
+        "name": "bounds",
+        "ok": true,
+        "detail": "radii inside calibrated forgiveness"
+      },
+      {
+        "name": "route",
+        "ok": true,
+        "detail": "z 10 → 100 → 200 → 300 → 400"
+      },
+      {
+        "name": "pilot",
+        "ok": true,
+        "detail": "pilot wins in 9.9s of 40s"
+      },
+      {
+        "name": "prompt",
+        "ok": true,
+        "detail": "1070 chars"
+      }
+    ]
+  },
   "candidate": {
     "version": 1,
-    "title": "Ink Moon Arch Glide",
-    "tagline": "Fly the misty waterway through colossal stone arches toward the crescent moon.",
+    "title": "Ink Moon Archipelago",
+    "tagline": "Glide through painted stone arches above a mist-washed ink sea toward the crescent moon.",
     "world": {
-      "basePrompt": "A monochrome ink-wash landscape of a vast calm sea veiled in drifting mist. Colossal circular stone arches, crowned with pine trees, rise from the water in a receding line. Sheer cliffs with thin waterfalls flank both sides, floating rock islands hover in the pale sky, and a slender crescent moon hangs far ahead. Soft gray light, layered mountain silhouettes, and gentle ripples continue the scene forward in quiet, dreamlike stillness.",
+      "basePrompt": "A vast monochrome ink-wash seascape stretches ahead: colossal weathered stone arches rise from calm grey water, their crowns tufted with pine trees. Sheer cliffs with thin waterfalls flank the route, floating rock islands drift in the mist, and layered mountain silhouettes fade into a pale wash sky. Far ahead a slender crescent moon hangs over the horizon, framed by the arches. Soft fog rolls across the water, brushstroke clouds streak the sky, and the scene continues in deepening washes of grey toward the moonlit distance.",
       "landmarks": [
         {
-          "id": "grand-arch",
-          "description": "The largest circular stone arch, crowned with pines, rising from the sea."
+          "id": "great-arch",
+          "description": "The largest mossy stone arch rising from the water, crowned with pine trees"
+        },
+        {
+          "id": "twin-arches",
+          "description": "Two smaller stone arches standing side by side in the middle distance"
         },
         {
           "id": "crescent-moon",
-          "description": "A pale crescent moon floating low over the distant water."
-        },
-        {
-          "id": "far-arches",
-          "description": "Two smaller stone arches receding into the mist ahead."
+          "description": "A slender crescent moon hovering low over the misty horizon"
         },
         {
           "id": "waterfall-cliffs",
-          "description": "Sheer ink-dark cliffs with thin waterfalls flanking the waterway."
+          "description": "Sheer ink-dark cliffs with thin waterfalls on both sides of the channel"
         }
       ],
       "perspective": "first_person"
@@ -44,13 +182,13 @@
         "position": [
           0,
           18,
-          0
+          10
         ],
         "radius": 4,
-        "label": "Misty Waterway Launch"
+        "label": "Misty channel between the waterfall cliffs"
       },
       {
-        "id": "grand-arch-ring",
+        "id": "great-arch-ring",
         "kind": "checkpoint",
         "position": [
           -8,
@@ -58,52 +196,52 @@
           100
         ],
         "radius": 14,
-        "label": "Grand Pine Arch Ring"
+        "label": "Through the great pine-crowned arch"
       },
       {
-        "id": "crescent-ring",
+        "id": "twin-arch-ring",
         "kind": "checkpoint",
         "position": [
           14,
-          30,
-          210
+          16,
+          200
         ],
         "radius": 12,
-        "label": "Crescent Moon Ring"
+        "label": "Between the twin arches"
       },
       {
-        "id": "far-arch-ring",
+        "id": "floating-isle-ring",
         "kind": "checkpoint",
         "position": [
           -10,
-          20,
-          320
+          26,
+          300
         ],
         "radius": 12,
-        "label": "Far Mist Arch Ring"
+        "label": "Past the drifting floating islands"
       },
       {
-        "id": "moon-gate",
+        "id": "crescent-goal",
         "kind": "goal",
         "position": [
           0,
-          26,
-          430
+          20,
+          400
         ],
         "radius": 16,
-        "label": "Moon Gate Beyond the Arches"
+        "label": "Beneath the crescent moon"
       }
     ],
     "rules": {
       "durationSeconds": 40,
       "requiredCheckpointIds": [
-        "grand-arch-ring",
-        "crescent-ring",
-        "far-arch-ring"
+        "great-arch-ring",
+        "twin-arch-ring",
+        "floating-isle-ring"
       ],
-      "goalEntityId": "moon-gate",
+      "goalEntityId": "crescent-goal",
       "respawnBehindDistance": 15
     },
-    "cartridgeLine": "Thread the pine-crowned arches of an ink-wash sea before the mist closes in."
+    "cartridgeLine": "One brush, one sea of mist, three arches between you and the crescent moon. Fly the ink. "
   }
 }
