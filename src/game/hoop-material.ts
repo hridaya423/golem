@@ -1,6 +1,5 @@
-import { ABILITY_CALIBRATION, type EnemyKind } from "./abilities.ts";
-import { forwardOf, GLIDE_CALIBRATION, type GlideState, type ProxyEntity, type Vec3 } from "./glide.ts";
-import type { HoopPalette, HoopScene } from "./hoops.ts";
+import { forwardOf, GLIDE_CALIBRATION, type GlideState, type ProxyEntity } from "./glide.ts";
+import type { HoopPalette } from "./hoops.ts";
 import type { HoopAppearance } from "./spec.ts";
 
 export type HoopSurface = {

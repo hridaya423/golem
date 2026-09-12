@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { GlideCourse } from "./glide.ts";
-import type { ParkourCourse } from "./parkour.ts";
 
 // Trust-boundary budgets (PLAN.md "Fixed trust-boundary budgets"). Course envelope numbers come
 // from the Gate 1 calibration recorded in PROGRESS.md.

@@ -22,6 +22,8 @@ type ProbeReport = {
   disconnected: boolean;
 };
 
+const freshReport = (): ProbeReport => ({ status: "idle", marks: {}, worldPhase: null, worldId: null, sessionId: null, connectionStates: [], firstFrame: false, videoSize: [], error: null, disconnected: false });
+
 export function HappyOysterProbe() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const modelRef = useRef<HappyOysterBase<"adventure"> | null>(null);
@@ -30,8 +32,8 @@ export function HappyOysterProbe() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cancelledRef = useRef(false);
   const startedRef = useRef(false);
-  const reportRef = useRef<ProbeReport>({ status: "idle", marks: {}, worldPhase: null, worldId: null, sessionId: null, connectionStates: [], firstFrame: false, videoSize: [], error: null, disconnected: false });
-  const [report, setReport] = useState(reportRef.current);
+  const reportRef = useRef<ProbeReport>(freshReport());
+  const [report, setReport] = useState<ProbeReport>(freshReport);
 
   const stop = async () => {
     cancelledRef.current = true;
