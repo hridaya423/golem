@@ -9,7 +9,9 @@ import { REACTOR_MAX_RETRIES } from "../world/reactor-contract";
 export function Wordmark() {
   return (
     <header className="wordmark-block">
-      <h1 className="wordmark">GOLEM</h1>
+      <h1 className="wordmark">
+        GOLEM<span className="wordmark-mark" aria-hidden="true">{"//"}</span>
+      </h1>
       <p className="tagline">Give it an image. Get a world with rules.</p>
     </header>
   );
@@ -27,6 +29,7 @@ export function SeedWell({ seed }: { seed: PreparedImage | null }) {
           <p className="muted">Bring a photo, a sketch, or a view from your camera.</p>
         </div>
       )}
+      {seed && <span className="seed-tag">SEED·{seed.id.slice(0, 8)}</span>}
     </div>
   );
 }
@@ -84,20 +87,10 @@ export function StagingSteps({ steps, warmingLabel }: { steps: readonly StagingS
     warming: warmingLabel,
   };
   return (
-    <ol className="staging-steps">
+    <ol className="staging-steps" aria-live="polite">
       {steps.map((step) => (
         <li key={step.name} className={`step step-${step.status}`}>
-          <span className="step-mark" aria-hidden="true">
-            {step.status === "passed"
-              ? "✓"
-              : step.status === "active"
-                ? "…"
-                : step.status === "failed"
-                  ? "!"
-                  : step.status === "fallback"
-                    ? "◦"
-                    : "·"}
-          </span>
+          <span className="step-mark" aria-hidden="true" />
           <span className="step-copy">
             <span>{labels[step.name]}</span>
             {step.detail && <small className="muted">{step.detail}</small>}
@@ -119,15 +112,24 @@ export function PressButton({
   onHold: (control: string, held: boolean) => void;
   children: ReactNode;
 }) {
-  const release = () => onHold(control, false);
+  const [held, setHeld] = useState(false);
+  const hold = () => {
+    setHeld(true);
+    onHold(control, true);
+  };
+  const release = () => {
+    setHeld(false);
+    onHold(control, false);
+  };
   return (
     <button
       type="button"
       aria-label={name}
       className="press"
+      data-held={held || undefined}
       onPointerDown={(event) => {
         event.preventDefault();
-        onHold(control, true);
+        hold();
       }}
       onPointerUp={release}
       onPointerCancel={release}
@@ -136,7 +138,7 @@ export function PressButton({
         if (event.key !== "Enter") return;
         event.preventDefault();
         event.stopPropagation();
-        if (!event.repeat) onHold(control, true);
+        if (!event.repeat) hold();
       }}
       onKeyUp={(event) => {
         if (event.key !== "Enter") return;

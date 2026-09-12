@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { GlideCourse } from "./glide.ts";
-import type { ParkourCourse } from "./parkour.ts";
 
 // Trust-boundary budgets (PLAN.md "Fixed trust-boundary budgets"). Course envelope numbers come
 // from the Gate 1 calibration recorded in PROGRESS.md.
@@ -20,19 +19,6 @@ export const SPEC_LIMITS = {
   segment: { maxLateral: 260, maxVertical: 60 },
   course: { minDistance: 1250, maxDistance: 1700, minLateralSpan: 140, minDirectionChanges: 2 },
   respawnBehind: { min: 8, max: 50 },
-} as const;
-
-export const GameModeSchema = z.enum(["glide", "parkour"]);
-export const GameModePreferenceSchema = z.enum(["auto", "glide", "parkour"]);
-export type GameMode = z.infer<typeof GameModeSchema>;
-export type GameModePreference = z.infer<typeof GameModePreferenceSchema>;
-
-export const PARKOUR_LIMITS = {
-  platforms: { min: 8, max: 16 },
-  x: 45, top: { min: 2, max: 40 }, z: 340,
-  width: { min: 12, max: 24 }, height: { min: 2, max: 30 }, depth: { min: 12, max: 24 },
-  step: { min: 14, max: 24 }, gap: { min: 2, max: 6 }, lateral: 6, rise: 1.5, drop: 3,
-  distance: { min: 120, max: 330 }, radius: { min: 2, max: 4 },
 } as const;
 
 const finite = (min: number, max: number) => z.number().finite().min(min).max(max);
@@ -59,23 +45,6 @@ export const GlideSpecSchema = z.strictObject({
   drag: finite(SPEC_LIMITS.mechanic.min, SPEC_LIMITS.mechanic.max),
   turnRate: finite(SPEC_LIMITS.mechanic.min, SPEC_LIMITS.mechanic.max),
   boost: finite(SPEC_LIMITS.mechanic.min, SPEC_LIMITS.mechanic.max),
-});
-
-export const ParkourSpecSchema = GlideSpecSchema.extend({ kind: z.literal("parkour") });
-
-export const ParkourPlatformSchema = z.strictObject({
-  id,
-  position: z.tuple([
-    finite(-PARKOUR_LIMITS.x, PARKOUR_LIMITS.x),
-    finite(PARKOUR_LIMITS.top.min, PARKOUR_LIMITS.top.max),
-    finite(0, PARKOUR_LIMITS.z),
-  ]).readonly(),
-  size: z.tuple([
-    finite(PARKOUR_LIMITS.width.min, PARKOUR_LIMITS.width.max),
-    finite(PARKOUR_LIMITS.height.min, PARKOUR_LIMITS.height.max),
-    finite(PARKOUR_LIMITS.depth.min, PARKOUR_LIMITS.depth.max),
-  ]).readonly(),
-  label: text(SPEC_LIMITS.label),
 });
 
 export const GameRulesSchema = z.strictObject({
@@ -117,10 +86,9 @@ export const GameSpecCandidateSchema = z.strictObject({
   title: text(SPEC_LIMITS.title),
   tagline: text(SPEC_LIMITS.tagline),
   world: WorldCandidateSchema,
-  mechanic: z.discriminatedUnion("kind", [GlideSpecSchema, ParkourSpecSchema]),
+  mechanic: GlideSpecSchema,
   hoops: HoopAppearanceSchema,
   enemies: z.array(z.enum(["scout", "striker", "bulwark"])).length(3).readonly(),
-  platforms: z.array(ParkourPlatformSchema).max(PARKOUR_LIMITS.platforms.max).readonly(),
   entities: z.array(ProxyEntitySchema).length(5).readonly(),
   rules: GameRulesSchema,
   cartridgeLine: text(SPEC_LIMITS.cartridgeLine),
@@ -133,7 +101,7 @@ export const GameSpecSchema = GameSpecCandidateSchema.extend({
 
 export const GlideTurnPatchSchema = z.strictObject({
   version: z.literal(1),
-  mechanic: GameModeSchema,
+  mechanic: z.literal("glide"),
   operation: z.literal("multiply_turn_rate"),
   factor: z.union([z.literal(0.5), z.literal(2)]),
   cartridgeLine: text(SPEC_LIMITS.cartridgeLine),
@@ -151,10 +119,8 @@ export type ValidatedGameSpecPatch = GlideTurnPatch & { readonly [validated]: tr
 export const brandValidated = <T extends GameSpec | GlideTurnPatch>(value: T) =>
   value as T & { readonly [validated]: true };
 
-export function courseOf(spec: GameSpec): GlideCourse | ParkourCourse {
-  return spec.mechanic.kind === "parkour"
-    ? { mechanic: spec.mechanic, entities: spec.entities, rules: spec.rules, platforms: spec.platforms }
-    : { mechanic: spec.mechanic, entities: spec.entities, rules: spec.rules };
+export function courseOf(spec: GameSpec): GlideCourse {
+  return { mechanic: spec.mechanic, entities: spec.entities, rules: spec.rules };
 }
 
 export type ValidationIssue = {
@@ -170,7 +136,5 @@ export type ValidationResult =
   | { ok: false; issues: readonly ValidationIssue[]; checks: ValidationCheck[] };
 
 /** Strict JSON schema handed to the compiler; derived from the same Zod definition. */
-export const gameSpecCandidateJsonSchema = (mode: GameModePreference = "auto") => z.toJSONSchema(
-  mode === "auto" ? GameSpecCandidateSchema : GameSpecCandidateSchema.extend({ mechanic: mode === "parkour" ? ParkourSpecSchema : GlideSpecSchema }),
-);
-export const glideTurnPatchJsonSchema = (mode: GameMode = "glide") => z.toJSONSchema(GlideTurnPatchSchema.extend({ mechanic: z.literal(mode) }));
+export const gameSpecCandidateJsonSchema = () => z.toJSONSchema(GameSpecCandidateSchema);
+export const glideTurnPatchJsonSchema = () => z.toJSONSchema(GlideTurnPatchSchema);

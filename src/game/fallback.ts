@@ -1,6 +1,5 @@
 import { FIXTURE_COURSE } from "./glide.ts";
-import { DEFAULT_HOOP_APPEARANCE, type GameMode, type GameSpecCandidate, type ValidatedGameSpec } from "./spec.ts";
-import { DEFAULT_PARKOUR_COURSE } from "./parkour.ts";
+import { DEFAULT_HOOP_APPEARANCE, type GameSpecCandidate, type ValidatedGameSpec } from "./spec.ts";
 import { validateGameSpecCandidate } from "./validate.ts";
 import { FIXTURE_WORLD } from "../world/prompts.ts";
 
@@ -17,33 +16,12 @@ export const FALLBACK_CANDIDATE: GameSpecCandidate = {
   mechanic: { ...FIXTURE_COURSE.mechanic },
   hoops: { ...DEFAULT_HOOP_APPEARANCE },
   enemies: ["scout", "striker", "bulwark"],
-  platforms: [],
   entities: [...FIXTURE_COURSE.entities],
   rules: { ...FIXTURE_COURSE.rules },
   cartridgeLine: "Three arches, one moon gate, no second chances.",
 };
 
-export function fallbackCandidate(image: { id: string }, mode: GameMode = "glide"): GameSpecCandidate {
-  if (mode === "parkour") {
-    return {
-      ...fallbackCandidate(image),
-      title: "Your World, On Foot",
-      tagline: "Find your footing. Jump the gaps. Reach the final landing.",
-      world: {
-        basePrompt: "An expanded environment continuing the reference image's colors, materials, forms, lighting and visual style, with broad elevated landing surfaces separated by short gaps and clear distant depth.",
-        landmarks: [
-          { id: "near-landing", description: "A nearby broad elevated surface using the reference image's materials and shapes." },
-          { id: "far-landing", description: "A distant elevated destination continuing the reference image's visual style." },
-        ],
-        perspective: "first_person",
-      },
-      mechanic: { ...DEFAULT_PARKOUR_COURSE.mechanic },
-      entities: DEFAULT_PARKOUR_COURSE.entities,
-      platforms: DEFAULT_PARKOUR_COURSE.platforms,
-      rules: DEFAULT_PARKOUR_COURSE.rules,
-      cartridgeLine: "Your image, a path of landings, one clean run.",
-    };
-  }
+export function fallbackCandidate(image: { id: string }): GameSpecCandidate {
   if (image.id === "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42") return FALLBACK_CANDIDATE;
   return {
     ...FALLBACK_CANDIDATE,
@@ -65,8 +43,8 @@ export function fallbackCandidate(image: { id: string }, mode: GameMode = "glide
   };
 }
 
-export function fallbackSpec(image: { id: string }, mode: GameMode = "glide"): ValidatedGameSpec {
-  const result = validateGameSpecCandidate(fallbackCandidate(image, mode), image);
+export function fallbackSpec(image: { id: string }): ValidatedGameSpec {
+  const result = validateGameSpecCandidate(fallbackCandidate(image), image);
   if (!result.ok) throw new Error(`Fallback spec is invalid: ${JSON.stringify(result.issues)}`);
   return result.spec;
 }
