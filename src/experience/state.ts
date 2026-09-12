@@ -58,7 +58,7 @@ export type Phase =
       pngUrl: string | null;
       error?: string;
     }
-  | { name: "error"; seed: PreparedImage | null; spec?: ValidatedGameSpec; message: string };
+  | { name: "error"; seed: PreparedImage | null; spec?: ValidatedGameSpec; source?: SpecSource; label?: string; checks?: ValidationCheck[]; direction?: string; message: string };
 
 export type Action =
   | { type: "SEED_LOADED"; seed: PreparedImage }
@@ -252,6 +252,7 @@ export function reducer(phase: Phase, action: Action): Phase {
         pngUrl: action.pngUrl,
       };
     case "CARTRIDGE_FAILED":
+      if (phase.name === "result") return { ...phase, error: action.message };
       if (phase.name !== "finished" || phase.run !== "patched" || phase.outcome !== "won") return phase;
       return {
         name: "result",
@@ -273,11 +274,11 @@ export function reducer(phase: Phase, action: Action): Phase {
         return {
           name: "staging",
           seed: phase.seed,
-          direction: "",
+          direction: phase.direction ?? "",
           spec: phase.spec ?? null,
-          source: null,
-          label: null,
-          checks: [],
+          source: phase.spec ? phase.source ?? "fallback" : null,
+          label: phase.spec ? phase.label ?? "prepared" : null,
+          checks: phase.checks ?? [],
           steps: phase.spec
             ? [
                 { name: "reading", status: "passed" },
@@ -296,6 +297,10 @@ export function reducer(phase: Phase, action: Action): Phase {
         name: "error",
         seed: "seed" in phase ? phase.seed : null,
         spec: "spec" in phase && phase.spec ? phase.spec : undefined,
+        source: "source" in phase ? phase.source ?? undefined : undefined,
+        label: "label" in phase ? phase.label ?? undefined : undefined,
+        checks: "checks" in phase ? phase.checks : undefined,
+        direction: "direction" in phase ? phase.direction : undefined,
         message: action.message,
       };
     default:

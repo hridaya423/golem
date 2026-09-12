@@ -14,7 +14,7 @@ test("empty app renders without console or page errors", async ({ page }) => {
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "ANYTHING//PLAY", exact: true }),
+    page.getByRole("heading", { name: "GOLEM", exact: true }),
   ).toBeVisible();
   expect(errors).toEqual([]);
 });

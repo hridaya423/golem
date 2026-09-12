@@ -1,4 +1,4 @@
-import { AnythingPlay } from "../experience/AnythingPlay";
+import { Golem } from "../experience/Golem";
 
 export default async function Home({
   searchParams,
@@ -7,8 +7,19 @@ export default async function Home({
 }) {
   const params = await searchParams;
   const mode =
-    params.world === "fake" || process.env.NEXT_PUBLIC_WORLD === "fake" ? "fake" : "live";
+    process.env.GOLEM_TEST_WORLD === "fake" && params.world !== "live" ? "fake" : "live";
   const operator = params.operator === "1";
   const compiler = params.compiler === "off" ? "off" : "on";
-  return <AnythingPlay mode={mode} operator={operator} compiler={compiler} />;
+  const seed =
+    params.seed === "fixture" || operator || mode === "fake" ? "fixture" : "none";
+  const longTitle = operator && params.title === "long";
+  return (
+    <Golem
+      mode={mode}
+      operator={operator}
+      compiler={compiler}
+      seed={seed}
+      longTitle={longTitle}
+    />
+  );
 }

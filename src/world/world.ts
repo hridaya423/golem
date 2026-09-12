@@ -34,6 +34,8 @@ export type WorldStatus = {
   /** Composite action string Reactor used for the last chunk, e.g. "w+right". */
   lastChunkAction?: string;
   error?: string;
+  retryAt?: number;
+  retryAttempt?: number;
 };
 
 export type StageInput = { image: PreparedImage; prompt: string; seed: number };
@@ -49,6 +51,8 @@ export interface WorldDriver {
   reset(): Promise<void>;
   /** Re-attempt the world connection after a refused/dropped session (no-op for the fake world). */
   reconnect(): Promise<void>;
+  /** Drop the session/connection (no-op for the fake world). */
+  disconnect(): Promise<void>;
   captureFrame(): Promise<Blob | null>;
 }
 

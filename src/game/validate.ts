@@ -73,7 +73,7 @@ function validateTrusted(
       issues.push({ path: `entities.${i}.radius`, code: "out_of_bounds", message: `${e.kind} radius ${e.radius} outside ${range.min}–${range.max}` });
     }
   });
-  checks.push({ name: "bounds", ok: issues.length === 0, detail: "radii inside calibrated forgiveness" });
+  checks.push({ name: "bounds", ok: issues.length === 0, detail: "radii inside supported forgiveness" });
   if (issues.length) return fail(issues);
 
   const start = spec.entities.find((e) => e.kind === "start")!;
@@ -85,10 +85,19 @@ function validateTrusted(
     else if (dz < SPEC_LIMITS.spacing.min || dz > SPEC_LIMITS.spacing.max) {
       issues.push({ path: `entities.${route[i].id}`, code: "out_of_bounds", message: `segment to ${route[i].id} advances z by ${dz}; allowed ${SPEC_LIMITS.spacing.min}–${SPEC_LIMITS.spacing.max}` });
     }
-    if (Math.abs(b[0] - a[0]) > 40) issues.push({ path: `entities.${route[i].id}`, code: "out_of_bounds", message: `segment to ${route[i].id} moves x by ${Math.abs(b[0] - a[0])}; max 40` });
-    if (Math.abs(b[1] - a[1]) > 20) issues.push({ path: `entities.${route[i].id}`, code: "out_of_bounds", message: `segment to ${route[i].id} moves y by ${Math.abs(b[1] - a[1])}; max 20` });
+    if (Math.abs(b[0] - a[0]) > SPEC_LIMITS.segment.maxLateral) issues.push({ path: `entities.${route[i].id}`, code: "out_of_bounds", message: `segment to ${route[i].id} moves x by ${Math.abs(b[0] - a[0])}; max ${SPEC_LIMITS.segment.maxLateral}` });
+    if (Math.abs(b[1] - a[1]) > SPEC_LIMITS.segment.maxVertical) issues.push({ path: `entities.${route[i].id}`, code: "out_of_bounds", message: `segment to ${route[i].id} moves y by ${Math.abs(b[1] - a[1])}; max ${SPEC_LIMITS.segment.maxVertical}` });
   }
-  checks.push({ name: "route", ok: issues.length === 0, detail: `z ${route.map((e) => e.position[2]).join(" → ")}` });
+  const distance = goal!.position[2] - start.position[2];
+  const xs = route.map((e) => e.position[0]);
+  const lateralSpan = Math.max(...xs) - Math.min(...xs);
+  const directions = xs.slice(1).map((x, i) => Math.sign(x - xs[i])).filter((direction) => direction !== 0);
+  const directionChanges = directions.filter((direction, i) => i > 0 && direction !== directions[i - 1]).length;
+  const C = SPEC_LIMITS.course;
+  if (distance < C.minDistance || distance > C.maxDistance) issues.push({ path: "entities", code: "out_of_bounds", message: `course z distance ${distance}; allowed ${C.minDistance}–${C.maxDistance}` });
+  if (lateralSpan < C.minLateralSpan) issues.push({ path: "entities", code: "out_of_bounds", message: `course x span ${lateralSpan}; min ${C.minLateralSpan}` });
+  if (directionChanges < C.minDirectionChanges) issues.push({ path: "entities", code: "out_of_bounds", message: `course horizontal direction changes ${directionChanges}; min ${C.minDirectionChanges}` });
+  checks.push({ name: "route", ok: issues.length === 0, detail: `z ${route.map((e) => e.position[2]).join(" → ")}; x span ${lateralSpan}; ${directionChanges} direction changes` });
   if (issues.length) return fail(issues);
 
   const pilot = simulateCourse(courseOf(spec));

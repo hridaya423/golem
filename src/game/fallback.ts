@@ -19,8 +19,30 @@ export const FALLBACK_CANDIDATE: GameSpecCandidate = {
   cartridgeLine: "Three arches, one moon gate, no second chances.",
 };
 
+export function fallbackCandidate(image: { id: string }): GameSpecCandidate {
+  if (image.id === "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42") return FALLBACK_CANDIDATE;
+  return {
+    ...FALLBACK_CANDIDATE,
+    title: "Your World, In Motion",
+    tagline: "Follow three waypoints through your world, then reach the finish.",
+    world: {
+      basePrompt: "A continuous first-person journey through an expanded version of the reference image. Carry its colors, materials, forms, lighting and visual style naturally into the surrounding scene, with open space for a smooth forward flight.",
+      landmarks: [
+        { id: "near-form", description: "A nearby focal form continuing the reference image's shapes and materials." },
+        { id: "far-form", description: "A distant grouping of forms continuing the reference image's colors and visual style." },
+      ],
+      perspective: "first_person",
+    },
+    entities: FIXTURE_COURSE.entities.map((entity, i) => ({
+      ...entity,
+      label: entity.kind === "start" ? "Launch" : entity.kind === "goal" ? "Finish" : `Waypoint ${i}`,
+    })),
+    cartridgeLine: "Your image, three waypoints, one flight.",
+  };
+}
+
 export function fallbackSpec(image: { id: string }): ValidatedGameSpec {
-  const result = validateGameSpecCandidate(FALLBACK_CANDIDATE, image);
+  const result = validateGameSpecCandidate(fallbackCandidate(image), image);
   if (!result.ok) throw new Error(`Fallback spec is invalid: ${JSON.stringify(result.issues)}`);
   return result.spec;
 }

@@ -11,12 +11,14 @@ export const SPEC_LIMITS = {
   landmark: 120,
   cartridgeLine: 120,
   landmarks: { min: 2, max: 4 },
-  duration: { min: 20, max: 45 },
+  duration: { min: 55, max: 90 },
   mechanic: { min: 0.5, max: 2 },
-  lane: { x: 60, yMin: 0, yMax: 60, zMax: 500 },
-  radius: { checkpoint: { min: 8, max: 16 }, goal: { min: 10, max: 20 }, start: { min: 2, max: 6 } },
-  spacing: { min: 60, max: 130 },
-  respawnBehind: { min: 8, max: 30 },
+  lane: { x: 180, yMin: 0, yMax: 120, zMax: 1800 },
+  radius: { checkpoint: { min: 18, max: 32 }, goal: { min: 22, max: 38 }, start: { min: 2, max: 6 } },
+  spacing: { min: 200, max: 480 },
+  segment: { maxLateral: 260, maxVertical: 60 },
+  course: { minDistance: 1250, maxDistance: 1700, minLateralSpan: 140, minDirectionChanges: 2 },
+  respawnBehind: { min: 8, max: 50 },
 } as const;
 
 const finite = (min: number, max: number) => z.number().finite().min(min).max(max);

@@ -55,7 +55,7 @@ test("cartridge derives only from a won patched run", () => {
 test("cartridgeFilename slugifies the title", () => {
   assert.equal(
     cartridgeFilename("Ink Sea of Stone Moons!!"),
-    "anything-play-ink-sea-of-stone-moons.png",
+    "golem-ink-sea-of-stone-moons.png",
   );
-  assert.equal(cartridgeFilename("!!!"), "anything-play-game.png");
+  assert.equal(cartridgeFilename("!!!"), "golem-game.png");
 });

@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const realReactor = process.env.REAL_REACTOR === "1";
+const port = realReactor ? 3000 : 3100;
+const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -8,7 +10,7 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL,
     viewport: { width: 1440, height: 900 },
     trace: "on-first-retry",
     screenshot: "only-on-failure",
@@ -27,9 +29,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm dev --hostname 127.0.0.1",
-    url: "http://127.0.0.1:3000",
+    command: realReactor
+      ? `pnpm dev --hostname 127.0.0.1 --port ${port}`
+      : `pnpm build && pnpm start --hostname 127.0.0.1 --port ${port}`,
+    url: baseURL,
     reuseExistingServer: realReactor,
-    env: realReactor ? {} : { NEXT_PUBLIC_WORLD: "fake" },
+    env: realReactor ? {} : { GOLEM_TEST_WORLD: "fake" },
   },
 });

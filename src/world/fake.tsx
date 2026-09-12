@@ -141,6 +141,7 @@ export function FakeWorld({ onDriver }: { onDriver: (driver: WorldDriver) => voi
         store.set({ lastCommandAt: performance.now() });
       },
       reconnect: () => Promise.resolve(),
+      disconnect: () => Promise.resolve(),
       reset() {
         if (chunkTimer) clearInterval(chunkTimer);
         chunkTimer = null;

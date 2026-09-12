@@ -96,6 +96,20 @@ test("503 skips straight to fallback with one call", async () => {
   assert.ok(progressLog.some((p) => p.status === "fallback" && p.detail === "Compiler not configured — using the prepared game"));
 });
 
+test("fresh images get generic validated fallback after 503 or failed repair", async () => {
+  const image = { ...IMAGE, id: "a".repeat(64) };
+  for (const response of [{ body: { error: "not configured" }, status: 503 }, { body: ok(brokenCandidate()) }]) {
+    const { calls, fetchImpl } = recorder(response);
+    const outcome = await compileGame(image, "", () => {}, undefined, fetchImpl);
+    assert.equal(outcome.source, "fallback");
+    assert.equal(calls.length, "status" in response ? 1 : 2);
+    assert.equal(outcome.spec.referenceImageId, image.id);
+    assert.equal(outcome.spec.title, "Your World, In Motion");
+    assert.doesNotMatch(JSON.stringify(outcome.spec), /stone|ink|water|neon|canyon|arch|moon/i);
+    assert.ok(outcome.checks.every((check) => check.ok));
+  }
+});
+
 test("abort signal rejects instead of falling back", async () => {
   progressLog.length = 0;
   const controller = new AbortController();

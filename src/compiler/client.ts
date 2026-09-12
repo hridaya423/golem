@@ -1,4 +1,4 @@
-import { FALLBACK_CANDIDATE } from "../game/fallback.ts";
+import { fallbackCandidate } from "../game/fallback.ts";
 import { validateGameSpecCandidate } from "../game/validate.ts";
 import type {
   ValidatedGameSpec,
@@ -57,7 +57,7 @@ export async function compileGame(
 
   const fallback = (detail: string, step: "rules" | "testing"): CompileOutcome => {
     onProgress({ step, status: "fallback", detail });
-    const result = validateGameSpecCandidate(FALLBACK_CANDIDATE, image);
+    const result = validateGameSpecCandidate(fallbackCandidate(image), image);
     if (!result.ok) {
       throw new Error(`Fallback spec is invalid: ${JSON.stringify(result.issues)}`);
     }

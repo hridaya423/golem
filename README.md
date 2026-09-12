@@ -1,4 +1,4 @@
-# ANYTHING//PLAY
+# GOLEM
 
 Give it an image. Get a world with rules.
 

@@ -53,16 +53,16 @@ export type GlideState = {
 // Every empirical knob lives here; tune against the live stream, never inline.
 export const GLIDE_CALIBRATION = {
   step: 1 / 60,
-  baseSpeed: 24,
-  boostSpeed: 40,
+  baseSpeed: 32,
+  boostSpeed: 48,
   dragResponse: 2.5,
   // Measured live (Gate 1): LingBot at rotation_speed_deg 6 yaws ≈45°/s ≈ 0.78 rad/s.
   yawRate: 0.78,
   pitchRate: 0.8,
   maxPitch: 0.6,
-  laneHalfWidth: 70,
-  minAltitude: -5,
-  maxAltitude: 70,
+  laneHalfWidth: 220,
+  minAltitude: -20,
+  maxAltitude: 160,
   pathSampleInterval: 0.25,
   verticalFovRad: 1.1,
 } as const;
@@ -121,7 +121,7 @@ export function segmentHitsSphere(a: Vec3, b: Vec3, center: Vec3, radius: number
   return px * px + py * py + pz * pz <= radius * radius;
 }
 
-export function stepGlide(state: GlideState, rawInput: GlideInput, course: GlideCourse): GlideState {
+export function stepGlide(state: GlideState, rawInput: GlideInput, course: GlideCourse, speedMultiplier = 1): GlideState {
   if (state.status !== "running") return state;
   const C = GLIDE_CALIBRATION;
   const m = course.mechanic;
@@ -130,7 +130,8 @@ export function stepGlide(state: GlideState, rawInput: GlideInput, course: Glide
 
   const yaw = state.yaw + turn * C.yawRate * m.turnRate * C.step;
   const pitch = clamp(state.pitch + pitchIn * C.pitchRate * m.lift * C.step, -C.maxPitch, C.maxPitch);
-  const target = rawInput.boost ? C.baseSpeed + (C.boostSpeed - C.baseSpeed) * m.boost : C.baseSpeed;
+  const multiplier = Number.isFinite(speedMultiplier) ? clamp(speedMultiplier, 1, 2.5) : 1;
+  const target = (rawInput.boost ? C.baseSpeed + (C.boostSpeed - C.baseSpeed) * m.boost : C.baseSpeed) * multiplier;
   const speed = target + (state.speed - target) * Math.exp(-C.dragResponse * m.drag * C.step);
 
   const dir = forwardOf(yaw, pitch);
@@ -149,7 +150,13 @@ export function stepGlide(state: GlideState, rawInput: GlideInput, course: Glide
   let position = next;
   let outYaw = yaw, outPitch = pitch, outSpeed = speed;
 
-  if (segmentHitsSphere(prev, next, gate.position, gate.radius)) {
+  const crossesPlane = next[2] > prev[2] && prev[2] <= gate.position[2] && next[2] >= gate.position[2];
+  const crossing = crossesPlane ? (gate.position[2] - prev[2]) / (next[2] - prev[2]) : 0;
+  const openingDistance = Math.hypot(
+    prev[0] + (next[0] - prev[0]) * crossing - gate.position[0],
+    prev[1] + (next[1] - prev[1]) * crossing - gate.position[1],
+  );
+  if (crossesPlane && openingDistance <= gate.radius && segmentHitsSphere(prev, next, gate.position, gate.radius)) {
     activeGate += 1;
     completed = [...completed, gate.id];
     respawn = gate.position;
@@ -185,7 +192,7 @@ export function pilotInput(state: GlideState, course: GlideCourse): GlideInput {
   const dz = gate.position[2] - state.position[2];
   const wantYaw = Math.atan2(dx, dz);
   const wantPitch = Math.atan2(dy, Math.hypot(dx, dz));
-  const yawErr = wantYaw - state.yaw;
+  const yawErr = Math.atan2(Math.sin(wantYaw - state.yaw), Math.cos(wantYaw - state.yaw));
   const pitchErr = wantPitch - state.pitch;
   return { turn: clamp(yawErr / 0.15, -1, 1), pitch: clamp(pitchErr / 0.15, -1, 1), boost: Math.abs(yawErr) < 0.2 };
 }
@@ -210,7 +217,7 @@ export function projectPoint(
   const cy = Math.cos(-state.yaw), sy = Math.sin(-state.yaw);
   const x1 = rx * cy + rz * sy;
   const z1 = -rx * sy + rz * cy;
-  const cp = Math.cos(-state.pitch), sp = Math.sin(-state.pitch);
+  const cp = Math.cos(state.pitch), sp = Math.sin(state.pitch);
   const y2 = ry * cp - z1 * sp;
   const z2 = ry * sp + z1 * cp;
   if (z2 <= 0.5) return null;
@@ -222,11 +229,11 @@ export function projectPoint(
 export const FIXTURE_COURSE: GlideCourse = {
   mechanic: { kind: "glide", lift: 1, drag: 1, turnRate: 1, boost: 1 },
   entities: [
-    { id: "start", kind: "start", position: [0, 12, 0], radius: 4, label: "Launch" },
-    { id: "cp1", kind: "checkpoint", position: [0, 12, 90], radius: 10, label: "First arch" },
-    { id: "cp2", kind: "checkpoint", position: [20, 16, 190], radius: 10, label: "Second arch" },
-    { id: "cp3", kind: "checkpoint", position: [-16, 12, 290], radius: 10, label: "Third arch" },
-    { id: "goal", kind: "goal", position: [0, 14, 380], radius: 13, label: "Moon gate" },
+    { id: "start", kind: "start", position: [0, 24, 0], radius: 4, label: "Launch" },
+    { id: "cp1", kind: "checkpoint", position: [75, 36, 260], radius: 22, label: "First arch" },
+    { id: "cp2", kind: "checkpoint", position: [-110, 58, 680], radius: 24, label: "Second arch" },
+    { id: "cp3", kind: "checkpoint", position: [125, 28, 1080], radius: 24, label: "Third arch" },
+    { id: "goal", kind: "goal", position: [-40, 44, 1500], radius: 28, label: "Moon gate" },
   ],
-  rules: { durationSeconds: 30, requiredCheckpointIds: ["cp1", "cp2", "cp3"], goalEntityId: "goal", respawnBehindDistance: 12 },
+  rules: { durationSeconds: 70, requiredCheckpointIds: ["cp1", "cp2", "cp3"], goalEntityId: "goal", respawnBehindDistance: 20 },
 };

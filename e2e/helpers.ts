@@ -6,6 +6,8 @@ export type Snapshot = {
   mode: string;
   fallbackLevel: number;
   seedId: string | null;
+  worldPromptHash: string | null;
+  input: { turn: number; pitch: number; boost: boolean };
   patch: null | {
     transcript: string;
     factor: number;
@@ -30,15 +32,15 @@ export type Snapshot = {
     speed: number;
     respawns: number;
   };
-  world: { kind: string };
+  world: { kind: string; connection: string; error?: string };
 };
 
 export const readSnapshot = (page: Page): Promise<Snapshot | null> =>
   page.evaluate(
     () =>
       (
-        window as unknown as { __ANYTHING_PLAY__?: { snapshot: () => Snapshot } }
-      ).__ANYTHING_PLAY__?.snapshot() ?? null,
+        window as unknown as { __GOLEM__?: { snapshot: () => Snapshot } }
+      ).__GOLEM__?.snapshot() ?? null,
   );
 
 export function collectErrors(page: Page): string[] {
@@ -91,6 +93,7 @@ export async function driveToWin(page: Page, timeoutMs = 60_000): Promise<Snapsh
     await setKey("ArrowLeft", yawErr < -0.05);
     await setKey("ArrowUp", pitchErr > 0.05);
     await setKey("ArrowDown", pitchErr < -0.05);
+    await setKey("Space", Math.abs(yawErr) < 0.2);
     await page.waitForTimeout(50);
   }
   for (const key of held) await page.keyboard.up(key);

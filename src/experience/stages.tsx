@@ -4,11 +4,12 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { PreparedImage } from "../seed/image";
 import type { WorldStatus } from "../world/world";
 import type { StagingStep } from "./state";
+import { REACTOR_MAX_RETRIES } from "../world/reactor-contract";
 
 export function Wordmark() {
   return (
     <header className="wordmark-block">
-      <h1 className="wordmark">ANYTHING//PLAY</h1>
+      <h1 className="wordmark">GOLEM</h1>
       <p className="tagline">Give it an image. Get a world with rules.</p>
     </header>
   );
@@ -21,26 +22,57 @@ export function SeedWell({ seed }: { seed: PreparedImage | null }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={seed.previewUrl} alt={`Seed image: ${seed.originalName}`} />
       ) : (
-        <p className="muted">Reading the seed…</p>
+        <div className="seed-empty">
+          <strong>Your world starts here</strong>
+          <p className="muted">Bring a photo, a sketch, or a view from your camera.</p>
+        </div>
       )}
     </div>
   );
 }
 
-export function StatusPill({ status }: { status: WorldStatus }) {
+export function StatusPill({ status, onRetry }: { status: WorldStatus; onRetry: () => void }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (status.retryAt === undefined) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [status.retryAt]);
+  const retrying = status.retryAt !== undefined;
+  const ready = status.connection === "ready";
   const text = status.error
-    ? `World error: ${status.error}`
+    ? retrying ? "Reconnecting to the live world" : "Live world unavailable"
     : status.connection === "connecting"
-      ? "Connecting"
+      ? "Requesting a live session"
       : status.connection === "waiting"
-        ? "Waiting for a GPU"
-        : status.connection === "ready"
-          ? "World ready"
-          : "Disconnected";
+        ? "Connecting the live stream"
+        : ready
+          ? status.generating && status.firstFrameAt !== undefined ? "Live stream ready" : "Live connection ready"
+          : "World disconnected";
+  const detail = status.error
+    ? `${status.error}${retrying ? " Keep this tab open; retry is automatic." : ""}`
+    : status.connection === "connecting"
+      ? "Reactor is connecting while you prepare your game."
+      : status.connection === "waiting"
+        ? "Session created. Establishing the media connection. No need to refresh."
+        : ready
+          ? status.generating ? "This session stays connected for your rule change and replay." : "Your session is connected. Generation begins once the image and rules are ready."
+          : "Reconnect to continue with live generation.";
   return (
-    <p className={`pill ${status.error ? "pill-error" : ""}`} role="status">
-      {text}
-    </p>
+    <div className="connection-status" data-state={retrying ? "retry" : status.error ? "error" : ready ? "ready" : status.connection === "disconnected" ? "idle" : "busy"} role="status">
+      <div className="connection-heading">
+        <strong>{text}</strong>
+        {status.retryAt !== undefined && (
+          <span className="connection-countdown" aria-live="off">
+            Retry in {Math.max(0, Math.ceil((status.retryAt - now) / 1000))}s · {status.retryAttempt}/{REACTOR_MAX_RETRIES}
+          </span>
+        )}
+      </div>
+      <p className="connection-detail">{detail}</p>
+      {status.connection === "disconnected" && !retrying && (
+        <button type="button" className="secondary" onClick={onRetry}>Retry connection</button>
+      )}
+    </div>
   );
 }
 
@@ -66,8 +98,10 @@ export function StagingSteps({ steps, warmingLabel }: { steps: readonly StagingS
                     ? "◦"
                     : "·"}
           </span>
-          {labels[step.name]}
-          {step.detail && <span className="muted"> — {step.detail}</span>}
+          <span className="step-copy">
+            <span>{labels[step.name]}</span>
+            {step.detail && <small className="muted">{step.detail}</small>}
+          </span>
         </li>
       ))}
     </ol>
@@ -98,6 +132,19 @@ export function PressButton({
       onPointerUp={release}
       onPointerCancel={release}
       onPointerLeave={release}
+      onKeyDown={(event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (!event.repeat) onHold(control, true);
+      }}
+      onKeyUp={(event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        event.stopPropagation();
+        release();
+      }}
+      onBlur={release}
       onContextMenu={(event) => event.preventDefault()}
     >
       {children}

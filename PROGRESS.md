@@ -1,5 +1,47 @@
 # PROGRESS
 
+## Submission handoff — implementation only; user owns testing
+
+User explicitly stopped QA and live rehearsals to prioritize submission. The visual-QA worker was stopped before it edited files or launched any tests. No additional live session was started. Older `gate-9/qa/play-1440x900.png` predates the hoop upgrade; it is not evidence of a current flat-green-ring regression.
+
+Final recovery changes: staging errors preserve compiled source/label/checks and direction on Retry, fixing the ready-state dead end caused by dropping source metadata; listening offers Type instead through the existing abort/phase transition; cartridge recapture catches render failures, reports missing frames, and ignores results after leaving the originating result state. Result errors preserve the existing cartridge. Generic failure copy now says rings rather than arches.
+
+`pnpm typecheck` and `git diff --check` pass after these edits. HTTP GET on `http://127.0.0.1:3000/` returned 200. The existing live-only Next dev server remains running; it was not restarted. No browser or functional tests were run for these final changes, at the user's request. Full live rehearsals, real microphone verification, and qualitative style/overlay alignment remain unverified and handed to the user. Architecture remains omitted. No submission prose, secrets, or user edits were overwritten.
+
+## Flight upgrade — image-driven appearance and optional Adventure kit
+
+User expanded scope to longer/faster flight, dimensional hoops, and a dash/grapple/combat prototype, then clarified that appearance must support arbitrary uploaded images. Interrupted workers were restarted on disjoint files; all three finishing workers completed.
+
+- Image continuity: compiler instructions now lead with the actual source medium, palette, texture and surface treatment instead of generic environment nouns. The runtime camera contract no longer adds cinematic lighting. Generic continuity prose prescribes no ink, water, stone or fixed scenery. Fresh-image fallback now uses generic reference-based world prose and labels; only the known ink-fixture SHA selects its fixture-specific fallback.
+- Hoops: cached 48×8 torus meshes with tube depth, perspective, shading, near-plane clipping, and small rim highlights replace flat green circles. Colors are sampled from each prepared image into shadow/midtone/highlight bands and also applied to Adventure targets/rope. Fully dark, bright and transparent inputs have readable bounded palettes. Gate passage now checks the actual opening plane with continuous intersection, so hoops do not vanish on entering an invisible sphere. Fixed a pitch projection sign error as part of this work.
+- Pacing: base/boost speeds 32/48, default fixture distance 1500 with alternating x 75/-110/125/-40 and varied altitude, default timer 70 s. Candidate limits require 1250–1700 forward distance, at least 140 lateral span and two horizontal reversals. The model still authors placement and labels within those limits. After opening-plane correction, headless pilot wins in 35.82 s boosted or 51.93 s without boost, with no respawns. These are deterministic runtime measurements, not a new empirical calibration of video translation speed.
+- Adventure kit: optional input checkbox enables Shift dash (0.35 s burst, 2.5 s cooldown), held E grapple to the active hoop's visible upper rim with steering assistance/release conditions, and F pulse target combat with range, aim, health, cooldowns and score. Targets derive from the supplied course, not demo coordinates. All motion uses the same fixed-step collision path. This is a bounded prototype, not arbitrary generated enemy AI or a separate grapple genre. LingBot remains appearance only. No nonempty camera-pose steering was introduced.
+- Input safety: blur pauses the deterministic flight, cancels active abilities and releases world controls. Resume flight or a new flight input continues. Keyboard and pointer controls both reach the same ability actions.
+
+Verification: lint/typecheck passed; 84 Node tests passed. `pnpm test:e2e --reporter=line` built the production app and passed 17 browser tests with 3 opt-in tests skipped, including the full longer original/patch/replay/download arc and pulse/grapple/dash integration. A focused image-colors rerun passed after adding a rendered-frame wait and a 320px no-overflow assertion. Inspected screenshots: `docs/evidence/flight-upgrade/grapple.png`, `image-colors.png`, and `image-colors-mobile.png`. Their fake badge is intentional: they came from the isolated automated server, not the live-only normal app. Offline Playwright now builds/starts production on 3100 rather than competing with the user's Next dev lock on 3000.
+
+One live compiler probe (no new Reactor session) used the neon-canyon image SHA `cb1ade1074f0e803cc10b14900f3844c02b00bee154c50abc6b586daa00da896`: Kimi K3 returned `Neon Ring Run` in 6574 ms, 75 s duration, z 0/300/700/1100/1500, x span 240, three direction changes, pilot win 36.9 s, composed prompt 1568 characters. All six checks passed. The model described the source's steel/glass, colored lighting and depicted wet-asphalt reflections rather than an ink world.
+
+Still unverified: reduced style drift over a long live LingBot stream with the user's actual image; qualitative video/3D-overlay alignment; live dash/grapple feel and full live rehearsals. The current changes do not claim image-perfect scene geometry, video occlusion, or model-owned combat.
+
+## Reactor retry fix — verified without live service calls
+
+The reported 429 was `quota_exceeded` / `sessions_per_minute`, not a GPU-capacity response. A mocked browser reproduction on the development server observed three `/sessions` POSTs from one page load and the incorrect pool-full label.
+
+The provider's automatic connection and internal multi-attempt behavior are disabled (`autoConnect: false`, `maxAttempts: 1`). The adapter still prewarms on mount, but one cancellable lifecycle owns initial connect, scheduled retry, manual reconnect, and disconnect. Initial scheduling survives React development effect replay without starting duplicate requests. At most one connection attempt and one retry timer are active. Typed error parsing distinguishes rate limits, unavailable capacity, authentication, and network errors; retry delays use the greater of the server hint and 8/16/32/60/60-second backoff, then stop. Retry hints above the timer range cannot turn into immediate timer loops. Authentication and unknown failures stop automatically; the UI exposes Retry connection and a cooldown countdown. Disconnect cancels pending retries and suppresses follow-up attempts from in-flight responses. Terminal connection errors now stop staging with an honest message rather than always claiming the pool is full.
+
+Fresh verification: `pnpm check` exited 0 (lint, typecheck, 42 Node tests, production build). `REAL_REACTOR=1 pnpm exec playwright test e2e/reactor-retry.spec.ts e2e/operator.spec.ts --grep 'one startup|capacity is distinct|disconnect during|manual reconnect|live mode without a key' --reporter=line` passed 5 tests in 8.9 s. Despite the server-reuse flag name, these five tests mock token/session responses and block other external requests; no real session was created. Browser coverage proves one startup request, cooldown/backoff enforcement, no automatic auth retries, disconnect during waiting/in-flight start, and no manual bypass or duplicate retry.
+
+Live quota and capacity availability remain external constraints; this fix does not claim that a live connection or full live rehearsal succeeded.
+
+## Current change — live-only user flow
+
+The user requested removal of fake-world output from the app. This supersedes the older operator level-4 selection requirement below. Normal dev/production pages always select live Reactor, including old `?world=fake` URLs; `NEXT_PUBLIC_WORLD` no longer selects the renderer. Fake rendering is restricted to the automated server's explicit `GOLEM_TEST_WORLD=fake` setting, and retains its warning label there. Operator/error surfaces no longer offer a fake-world switch. Offline Playwright runs on port 3100; normal dev and opt-in live rehearsals use port 3000.
+
+Verification: `pnpm lint && pnpm typecheck` exited 0; `pnpm exec playwright test e2e/operator.spec.ts --reporter=line` passed 2 tests in 6.0 s. A browser check against normal port 3000 with `?operator=1&world=fake&compiler=off` confirmed mode `live`, no fake badge, and no fake switching controls. Token requests were mocked; this check allocated no live sessions. The live-only dev server was restarted on port 3000 with test-mode environment variables cleared.
+
+The Reactor retry issue reported during this change is fixed in the entry above. Full live rehearsals and the remaining visual review are still outstanding. No architecture artifact is required after the user's scope change.
+
 Gate 0 — complete. Gate 1 — **PASS**. Gates 2–4 — **complete** (live compiler qualified). Gate 5 is next.
 
 # Gates 2–4 — trusted GameSpec, semantic validation, live compiler

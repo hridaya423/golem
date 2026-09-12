@@ -16,7 +16,12 @@ import {
   type WorldDriver,
   type WorldStatus,
 } from "./world";
-import { EMPTY_CAMERA_POSE, RELEASE_CONTROLS } from "./reactor-contract";
+import {
+  classifyReactorConnectionError,
+  reactorRetryDelayMs,
+  EMPTY_CAMERA_POSE,
+  RELEASE_CONTROLS,
+} from "./reactor-contract";
 
 let cachedToken: { jwt: string; expiresAtMs: number } | null = null;
 let inflightToken: Promise<string> | null = null;
@@ -46,13 +51,11 @@ async function fetchToken(): Promise<string> {
   return inflightToken;
 }
 
-const AUTO_CONNECT = { autoConnect: true };
-const CAPACITY_RETRY_MS = 8_000;
-const CAPACITY_RETRY_LIMIT = 20;
+const CONNECTION_OPTIONS = { autoConnect: false, maxAttempts: 1 };
 
 export function LiveWorldProvider({ children }: { children: ReactNode }) {
   return (
-    <LingbotWorld2Provider jwtToken={fetchToken} connectOptions={AUTO_CONNECT}>
+    <LingbotWorld2Provider jwtToken={fetchToken} connectOptions={CONNECTION_OPTIONS}>
       {children}
     </LingbotWorld2Provider>
   );
@@ -133,27 +136,105 @@ export function LingbotWorld({ onDriver }: { onDriver: (driver: WorldDriver) => 
       connection: world.status,
       sessionId: world.sessionId,
       // lastError persists in the SDK store; only a disconnected world should still show it.
-      error: world.lastError && world.status === "disconnected" ? world.lastError.message : undefined,
+      ...(world.status === "ready" ? { error: undefined, retryAt: undefined, retryAttempt: undefined } : {}),
     });
-  }, [store, world.status, world.sessionId, world.lastError]);
+  }, [store, world.status, world.sessionId]);
 
   // The shared LingBot pool refuses sessions with 429 "no available capacity" while full; the
   // SDK's own retries give up within seconds, so keep asking at a slow cadence until a GPU frees up.
-  const capacityRetriesRef = useRef(0);
+  const connectionRef = useRef<{
+    reconnect: () => Promise<void>;
+    disconnect: () => Promise<void>;
+  } | null>(null);
   useEffect(() => {
-    const message = world.lastError?.message ?? "";
-    const refused = world.status === "disconnected" && /429|capacity|busy/i.test(message);
-    if (!refused || capacityRetriesRef.current >= CAPACITY_RETRY_LIMIT) return;
-    const attempt = ++capacityRetriesRef.current;
-    store.set({ error: `World pool is full — retrying (${attempt}/${CAPACITY_RETRY_LIMIT})` });
-    const timer = setTimeout(() => {
-      worldRef.current.connect(fetchToken).catch(() => {});
-    }, CAPACITY_RETRY_MS);
-    return () => clearTimeout(timer);
-  }, [store, world.status, world.lastError]);
-  useEffect(() => {
-    if (world.status === "ready") capacityRetriesRef.current = 0;
-  }, [world.status]);
+    const connect = world.connect;
+    const disconnect = world.disconnect;
+    let disposed = false;
+    let stopped = false;
+    let retries = 0;
+    let retryAt = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let connecting: Promise<void> | null = null;
+    let disconnecting: Promise<void> | null = null;
+
+    const clearTimer = () => {
+      clearTimeout(timer);
+      timer = undefined;
+    };
+    const schedule = (delay: number) => {
+      clearTimer();
+      timer = setTimeout(() => {
+        timer = undefined;
+        void attempt();
+      }, Math.min(delay, 2_147_483_647));
+    };
+    const attempt = (): Promise<void> => {
+      if (disposed || stopped || disconnecting) return Promise.resolve();
+      if (connecting) return connecting;
+      if (worldRef.current.status !== "disconnected") return Promise.resolve();
+      if (Date.now() < retryAt) {
+        store.set({ retryAt, retryAttempt: retries });
+        schedule(retryAt - Date.now());
+        return Promise.resolve();
+      }
+      clearTimer();
+      store.set({ error: undefined, retryAt: undefined, retryAttempt: undefined });
+      connecting = connect(fetchToken, { maxAttempts: 1 })
+        .then(() => {
+          if (disposed || stopped) return;
+          retries = 0;
+          retryAt = 0;
+          store.set({ error: undefined, retryAt: undefined, retryAttempt: undefined });
+        })
+        .catch((error: unknown) => {
+          if (disposed || stopped) return;
+          const failure = classifyReactorConnectionError(error);
+          const delay = reactorRetryDelayMs(failure, ++retries);
+          retryAt = Date.now() + (delay ?? 0);
+          store.set({
+            error: failure.message,
+            retryAt: delay === null ? undefined : retryAt,
+            retryAttempt: delay === null ? undefined : retries,
+          });
+          if (delay !== null) schedule(delay);
+        })
+        .finally(() => {
+          connecting = null;
+        });
+      return connecting;
+    };
+    const connection = {
+      reconnect() {
+        if (disposed || connecting || disconnecting || timer !== undefined) return connecting ?? disconnecting ?? Promise.resolve();
+        stopped = false;
+        if (Date.now() >= retryAt) retries = 0;
+        return attempt();
+      },
+      disconnect() {
+        stopped = true;
+        clearTimer();
+        store.set({ error: undefined, retryAt: undefined, retryAttempt: undefined });
+        if (!disconnecting) {
+          disconnecting = disconnect()
+            .catch((error: unknown) => {
+              if (!disposed) store.set({ error: classifyReactorConnectionError(error).message });
+            })
+            .finally(() => {
+              disconnecting = null;
+            });
+        }
+        return disconnecting;
+      },
+    };
+    connectionRef.current = connection;
+    schedule(0);
+    return () => {
+      disposed = true;
+      stopped = true;
+      clearTimer();
+      if (connectionRef.current === connection) connectionRef.current = null;
+    };
+  }, [store, world.connect, world.disconnect]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -195,7 +276,13 @@ export function LingbotWorld({ onDriver }: { onDriver: (driver: WorldDriver) => 
       subscribe: (listener) => store.subscribe(listener),
       async stage(input: StageInput) {
         const w = () => worldRef.current;
-        await waitForStatus(store, (s) => s.connection === "ready", 180_000, "World did not become ready (pool full)");
+        await waitForStatus(
+          store,
+          (s) => s.connection === "ready" || (s.connection === "disconnected" && Boolean(s.error) && s.retryAt === undefined),
+          180_000,
+          "World connection timed out. Retry the connection.",
+        );
+        if (store.get().connection !== "ready") throw new Error(store.get().error ?? "World is disconnected");
         if (store.get().generating || stagedRef.current) {
           reportError(w().reset());
           await waitForStatus(store, (s) => !s.generating, 30_000, "World reset did not complete");
@@ -254,10 +341,11 @@ export function LingbotWorld({ onDriver }: { onDriver: (driver: WorldDriver) => 
         reportError(w.setCameraPose({ camera_pose: EMPTY_CAMERA_POSE }));
         store.set({ lastCommandAt: performance.now() });
       },
-      async reconnect() {
-        capacityRetriesRef.current = 0;
-        store.set({ error: undefined });
-        await worldRef.current.connect(fetchToken);
+      reconnect() {
+        return connectionRef.current?.reconnect() ?? Promise.resolve();
+      },
+      disconnect() {
+        return connectionRef.current?.disconnect() ?? Promise.resolve();
       },
       async reset() {
         reportError(worldRef.current.reset());

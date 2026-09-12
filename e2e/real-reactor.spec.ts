@@ -11,7 +11,7 @@ test.use({ video: "on" });
 
 test("live Reactor world: stage fixture, hold a turn, record coupling telemetry", async ({ page }, testInfo) => {
   mkdirSync(EVIDENCE_DIR, { recursive: true });
-  const snapshot = () => page.evaluate(() => window.__ANYTHING_PLAY__?.snapshot() ?? null).catch(() => null);
+  const snapshot = () => page.evaluate(() => window.__GOLEM__?.snapshot() ?? null).catch(() => null);
   const shot = (label: string) => page.screenshot({ path: path.join(EVIDENCE_DIR, `live-${label}.png`) });
   const timeline: Array<{ label: string; at: number; snapshot: unknown }> = [];
   const consoleErrors: string[] = [];
