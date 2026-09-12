@@ -1,10 +1,23 @@
-import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { FIXTURE_COURSE, routeOf } from "../src/game/glide";
 
-type Snapshot = {
+export type Snapshot = {
   phase: string;
   mode: string;
   fallbackLevel: number;
+  seedId: string | null;
+  patch: null | {
+    transcript: string;
+    factor: number;
+    source: string;
+    originalTurnRate: number;
+    patchedTurnRate: number;
+    reactorDegBefore: number;
+    reactorDegAfter: number;
+    sessionIdBefore?: string;
+    sessionIdAfter?: string;
+    worldPromptHash: string | null;
+  };
   spec: null | { title: string; referenceImageId: string; seed: number; source: string };
   run: null | {
     status: string;
@@ -20,21 +33,25 @@ type Snapshot = {
   world: { kind: string };
 };
 
-test("fake world glide flow: stage, play with keyboard, win in order", async ({ page }) => {
+export const readSnapshot = (page: Page): Promise<Snapshot | null> =>
+  page.evaluate(
+    () =>
+      (
+        window as unknown as { __ANYTHING_PLAY__?: { snapshot: () => Snapshot } }
+      ).__ANYTHING_PLAY__?.snapshot() ?? null,
+  );
+
+export function collectErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(`console.error: ${message.text()}`);
   });
+  return errors;
+}
 
-  await page.goto("/?world=fake&compiler=off");
-  await expect(
-    page.getByRole("heading", { name: "ANYTHING//PLAY", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Make playable" }).click();
-  await expect(page.getByRole("button", { name: "Start run" })).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("button", { name: "Start run" }).click();
-
+/** Drives the fixture course via real keyboard input until the run ends; returns the final snapshot. */
+export async function driveToWin(page: Page, timeoutMs = 60_000): Promise<Snapshot> {
   const route = routeOf(FIXTURE_COURSE);
   const held = new Set<string>();
   const setKey = async (key: string, want: boolean) => {
@@ -46,14 +63,10 @@ test("fake world glide flow: stage, play with keyboard, win in order", async ({ 
       await page.keyboard.up(key);
     }
   };
-  const readSnapshot = () =>
-    page.evaluate(() => window.__ANYTHING_PLAY__?.snapshot() ?? null) as Promise<Snapshot | null>;
-
-  const deadline = Date.now() + 60_000;
+  const deadline = Date.now() + timeoutMs;
   let final: Snapshot | null = null;
-  let shotTaken = false;
   while (Date.now() < deadline) {
-    const snapshot = await readSnapshot();
+    const snapshot = await readSnapshot(page);
     if (!snapshot?.run) {
       await page.waitForTimeout(100);
       continue;
@@ -61,10 +74,6 @@ test("fake world glide flow: stage, play with keyboard, win in order", async ({ 
     if (snapshot.run.status !== "running") {
       final = snapshot;
       break;
-    }
-    if (!shotTaken) {
-      shotTaken = true;
-      await page.screenshot({ path: "docs/evidence/gate-1/fake-play.png" });
     }
     const gate = route[snapshot.run.activeGate];
     if (!gate) {
@@ -77,8 +86,7 @@ test("fake world glide flow: stage, play with keyboard, win in order", async ({ 
       Math.sin(Math.atan2(gx - px, gz - pz) - snapshot.run.yaw),
       Math.cos(Math.atan2(gx - px, gz - pz) - snapshot.run.yaw),
     );
-    const pitchErr =
-      Math.atan2(gy - py, Math.hypot(gx - px, gz - pz)) - snapshot.run.pitch;
+    const pitchErr = Math.atan2(gy - py, Math.hypot(gx - px, gz - pz)) - snapshot.run.pitch;
     await setKey("ArrowRight", yawErr > 0.05);
     await setKey("ArrowLeft", yawErr < -0.05);
     await setKey("ArrowUp", pitchErr > 0.05);
@@ -86,17 +94,7 @@ test("fake world glide flow: stage, play with keyboard, win in order", async ({ 
     await page.waitForTimeout(50);
   }
   for (const key of held) await page.keyboard.up(key);
-
-  if (!final) final = await readSnapshot();
-  expect(final).not.toBeNull();
-  expect(final!.run?.status).toBe("won");
-  expect(final!.run?.completed).toEqual(["cp1", "cp2", "cp3", "goal"]);
-  expect(final!.fallbackLevel).toBe(4);
-  expect(final!.world.kind).toBe("fake");
-  expect(final!.spec?.source).toBe("fallback");
-  expect(final!.spec?.referenceImageId).toBe(
-    "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
-  );
-  await expect(page.getByText("Course complete")).toBeVisible();
-  expect(errors).toEqual([]);
-});
+  if (!final) final = await readSnapshot(page);
+  if (!final) throw new Error("No debug snapshot available");
+  return final;
+}

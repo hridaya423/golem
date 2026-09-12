@@ -5,6 +5,19 @@ export type DebugSnapshot = {
   phase: string;
   mode: "fake" | "live";
   fallbackLevel: 1 | 3 | 4;
+  seedId: string | null;
+  patch: null | {
+    transcript: string;
+    factor: number;
+    source: string;
+    originalTurnRate: number;
+    patchedTurnRate: number;
+    reactorDegBefore: number;
+    reactorDegAfter: number;
+    sessionIdBefore?: string;
+    sessionIdAfter?: string;
+    worldPromptHash: string | null;
+  };
   spec: null | {
     title: string;
     referenceImageId: string;

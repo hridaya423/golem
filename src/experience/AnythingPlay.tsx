@@ -14,9 +14,17 @@ import {
 } from "../game/glide";
 import { courseOf, type ValidatedGameSpec } from "../game/spec";
 import { compileGame } from "../compiler/client";
+import { requestPatch } from "../compiler/patch";
 import { clampCodePoints, DIRECTION_MAX_CODE_POINTS } from "../compiler/request";
 import { fallbackSpec } from "../game/fallback";
-import { loadFixtureImage } from "../seed/image";
+import {
+  cartridgeFilename,
+  deriveCartridge,
+  renderCartridge,
+  type CartridgeData,
+} from "../game/cartridge";
+import { loadFixtureImage, prepareImage, releasePreparedImage, sha256Hex } from "../seed/image";
+import { listenOnce } from "./speech";
 import { composeWorldPrompt } from "../world/prompts";
 import {
   controlsFromInput,
@@ -30,7 +38,15 @@ import { FakeWorld } from "../world/fake";
 import { LingbotWorld, LiveWorldProvider } from "../world/lingbot";
 import { installDebug, type DebugSnapshot } from "../testing/debug";
 import { initialPhase, reducer, type Phase, type SpecSource, type StagingStepName } from "./state";
-import { formatRemaining, PressButton, SeedWell, StagingSteps, StatusPill, Wordmark } from "./stages";
+import {
+  CameraCapture,
+  formatRemaining,
+  PressButton,
+  SeedWell,
+  StagingSteps,
+  StatusPill,
+  Wordmark,
+} from "./stages";
 
 const MAX_FRAME_GAP = 0.1;
 const MAX_FRAME_STEPS = 6;
@@ -69,6 +85,30 @@ function isEditableTarget(target: EventTarget | null): boolean {
 function goalLabel(spec: ValidatedGameSpec): string {
   return spec.entities.find((e) => e.kind === "goal")?.label ?? "the goal";
 }
+
+function speechFailureMessage(error: unknown): string {
+  const name = error instanceof Error ? error.name : "error";
+  switch (name) {
+    case "unsupported":
+      return "Speech recognition is not available in this browser — type your rule instead.";
+    case "denied":
+      return "Microphone access was declined. Type instead, or retry.";
+    case "no-match":
+      return "Didn't catch that — try again or type it.";
+    case "aborted":
+      return "Listening stopped.";
+    default:
+      return "Speech recognition failed — type instead or retry.";
+  }
+}
+
+type PatchInfo = {
+  transcript: string;
+  factor: number;
+  source: string;
+  originalTurnRate: number;
+  patchedTurnRate: number;
+};
 
 function drawRoute(
   ctx: CanvasRenderingContext2D,
@@ -131,6 +171,8 @@ export function AnythingPlay({
   const [phase, dispatch] = useReducer(reducer, initialPhase);
   const [driver, setDriver] = useState<WorldDriver | null>(null);
   const [direction, setDirection] = useState("");
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [typedRule, setTypedRule] = useState("");
   const [hud, setHud] = useState<Hud>({ elapsed: 0, checkpoints: 0, boost: false, status: "running" });
   const worldStatus = useWorldStatus(driver);
 
@@ -151,6 +193,27 @@ export function AnythingPlay({
   const inputToOverlayRef = useRef<number[]>([]);
   const seedRequestedRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const patchedFrameRef = useRef<Blob | null>(null);
+  const patchInfoRef = useRef<PatchInfo | null>(null);
+  const sessionIdBeforeRef = useRef<string | undefined>(undefined);
+  const sessionIdAfterRef = useRef<string | undefined>(undefined);
+  const worldPromptHashRef = useRef<string | null>(null);
+
+  const acceptSeed = useCallback((source: Blob, name: string) => {
+    prepareImage(source, name)
+      .then((prepared) => {
+        const previous = phaseRef.current.name === "input" ? phaseRef.current.seed : null;
+        dispatch({ type: "SEED_REPLACED", seed: prepared });
+        if (previous && previous !== prepared) releasePreparedImage(previous);
+      })
+      .catch((error: unknown) =>
+        dispatch({
+          type: "SEED_REJECTED",
+          message: error instanceof Error ? error.message : "Could not read that image.",
+        }),
+      );
+  }, []);
 
   const handleDriver = useCallback((next: WorldDriver) => {
     driverRef.current = next;
@@ -219,6 +282,11 @@ export function AnythingPlay({
     const controller = new AbortController();
     abortRef.current = controller;
     stageStartAtRef.current = performance.now();
+    patchInfoRef.current = null;
+    sessionIdBeforeRef.current = undefined;
+    sessionIdAfterRef.current = undefined;
+    worldPromptHashRef.current = null;
+    patchedFrameRef.current = null;
     const stillRunning = () =>
       stagingRunRef.current === runId && phaseRef.current.name === "staging";
     const progress = (
@@ -269,11 +337,9 @@ export function AnythingPlay({
         target = driverRef.current;
       }
       if (!target) throw new Error("World driver unavailable");
-      await target.stage({
-        image: phase.seed,
-        prompt: composeWorldPrompt(spec.world.basePrompt, spec.world.landmarks),
-        seed: spec.world.seed,
-      });
+      const prompt = composeWorldPrompt(spec.world.basePrompt, spec.world.landmarks);
+      worldPromptHashRef.current = await sha256Hex(new TextEncoder().encode(prompt));
+      await target.stage({ image: phase.seed, prompt, seed: spec.world.seed });
       if (stillRunning()) dispatch({ type: "STAGED" });
     };
     run().catch((error: unknown) => {
@@ -331,6 +397,10 @@ export function AnythingPlay({
     world?.setTurnRate(reactorTurnDeg(phase.spec.mechanic.turnRate));
     world?.setControls(controlsFromInput(inputRef.current));
     lastControlsRef.current = controlsFromInput(inputRef.current);
+    if (phase.run === "patched") {
+      patchedFrameRef.current = null;
+      sessionIdAfterRef.current = world?.getStatus().sessionId;
+    }
 
     const canvas = overlayRef.current;
     const ctx = canvas?.getContext("2d") ?? null;
@@ -359,6 +429,14 @@ export function AnythingPlay({
       while (accumulator >= GLIDE_CALIBRATION.step && steps < MAX_FRAME_STEPS) {
         state = stepGlide(state, inputRef.current, course);
         if (state.event) flashUntilRef.current = now + 180;
+        if (state.event === "gate" && phase.run === "patched") {
+          void world
+            ?.captureFrame()
+            .then((blob) => {
+              if (blob) patchedFrameRef.current = blob;
+            })
+            .catch(() => {});
+        }
         accumulator -= GLIDE_CALIBRATION.step;
         steps += 1;
         if (state.status !== "running") break;
@@ -385,6 +463,9 @@ export function AnythingPlay({
       if (state.status !== "running" && !ended) {
         ended = true;
         world?.stopControls();
+        if (phase.run === "original" && state.status === "won") {
+          sessionIdBeforeRef.current = world?.getStatus().sessionId;
+        }
         dispatch({
           type: "RUN_ENDED",
           outcome: state.status,
@@ -403,6 +484,135 @@ export function AnythingPlay({
     };
   }, [phase, releaseAll]);
 
+  const runPatch = useCallback(
+    async (transcript: string) => {
+      const current = phaseRef.current;
+      if (current.name !== "patch") return;
+      dispatch({ type: "PATCH_TRANSCRIPT", transcript });
+      try {
+        const outcome = await requestPatch(transcript, current.spec, compiler);
+        if (phaseRef.current.name !== "patch") return;
+        patchInfoRef.current = {
+          transcript,
+          factor: outcome.patch.factor,
+          source: outcome.source,
+          originalTurnRate: current.originalSpec.mechanic.turnRate,
+          patchedTurnRate: outcome.spec.mechanic.turnRate,
+        };
+        dispatch({ type: "PATCH_APPLIED", spec: outcome.spec, source: outcome.source });
+      } catch (error) {
+        if (phaseRef.current.name !== "patch") return;
+        if (error instanceof Error && error.name === "AbortError") return;
+        dispatch({
+          type: "PATCH_FAILED",
+          message: error instanceof Error ? error.message : "Patch failed",
+        });
+      }
+    },
+    [compiler],
+  );
+
+  useEffect(() => {
+    if (phase.name !== "patch" || phase.mode !== "listening") return;
+    let cancelled = false;
+    const listener = listenOnce();
+    listener.result
+      .then((transcript) => {
+        if (!cancelled) void runPatch(transcript);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          dispatch({ type: "PATCH_FAILED", message: speechFailureMessage(error) });
+        }
+      });
+    return () => {
+      cancelled = true;
+      listener.abort();
+    };
+  }, [phase, runPatch]);
+
+  useEffect(() => {
+    if (phase.name !== "patch" || phase.mode !== "applied") return;
+    const timer = setTimeout(() => dispatch({ type: "START_REPLAY" }), 1200);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase.name !== "finished" || phase.run !== "patched" || phase.outcome !== "won") return;
+    let cancelled = false;
+    const build = async () => {
+      const run = runRef.current;
+      if (!run) {
+        dispatch({ type: "FAIL", message: "No finished run to record" });
+        return;
+      }
+      let cartridge: CartridgeData;
+      try {
+        cartridge = deriveCartridge({
+          spec: phase.spec,
+          originalSpec: phase.originalSpec,
+          run,
+          runKind: "patched",
+        });
+      } catch (error) {
+        if (!cancelled) {
+          dispatch({
+            type: "FAIL",
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+        return;
+      }
+      const frame =
+        (await driverRef.current?.captureFrame().catch(() => null)) ?? patchedFrameRef.current;
+      if (!frame) {
+        if (!cancelled) {
+          dispatch({
+            type: "CARTRIDGE_FAILED",
+            cartridge,
+            message: "No generated frame was captured",
+          });
+        }
+        return;
+      }
+      try {
+        const png = await renderCartridge(cartridge, phase.seed.original, frame);
+        if (!cancelled) {
+          dispatch({ type: "CARTRIDGE_READY", cartridge, pngUrl: URL.createObjectURL(png) });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          dispatch({
+            type: "CARTRIDGE_FAILED",
+            cartridge,
+            message: error instanceof Error ? error.message : "Cartridge render failed",
+          });
+        }
+      }
+    };
+    void build();
+    return () => {
+      cancelled = true;
+    };
+  }, [phase]);
+
+  const retryCapture = useCallback(async () => {
+    const current = phaseRef.current;
+    if (current.name !== "result") return;
+    const frame =
+      (await driverRef.current?.captureFrame().catch(() => null)) ?? patchedFrameRef.current;
+    if (!frame) return;
+    const png = await renderCartridge(current.cartridge, current.seed.original, frame);
+    if (phaseRef.current.name !== "result") return;
+    dispatch({ type: "CARTRIDGE_RENDERED", pngUrl: URL.createObjectURL(png) });
+  }, []);
+
+  const resetGame = useCallback(() => {
+    const current = phaseRef.current;
+    if (current.name === "result" && current.pngUrl) URL.revokeObjectURL(current.pngUrl);
+    dispatch({ type: "RESET" });
+  }, []);
+
   const getSnapshot = useCallback((): DebugSnapshot => {
     const currentPhase = phaseRef.current;
     const run = runRef.current;
@@ -417,10 +627,27 @@ export function AnythingPlay({
     const spec = "spec" in currentPhase && currentPhase.spec ? currentPhase.spec : null;
     const source = "source" in currentPhase ? currentPhase.source : null;
     const checks = "checks" in currentPhase ? currentPhase.checks : [];
+    const patchInfo = patchInfoRef.current;
     return {
       phase: currentPhase.name,
       mode,
       fallbackLevel: mode === "fake" ? 4 : source === "fallback" ? 3 : 1,
+      seedId:
+        "seed" in currentPhase && currentPhase.seed ? currentPhase.seed.id : null,
+      patch: patchInfo
+        ? {
+            transcript: patchInfo.transcript,
+            factor: patchInfo.factor,
+            source: patchInfo.source,
+            originalTurnRate: patchInfo.originalTurnRate,
+            patchedTurnRate: patchInfo.patchedTurnRate,
+            reactorDegBefore: reactorTurnDeg(patchInfo.originalTurnRate),
+            reactorDegAfter: reactorTurnDeg(patchInfo.patchedTurnRate),
+            sessionIdBefore: sessionIdBeforeRef.current,
+            sessionIdAfter: sessionIdAfterRef.current,
+            worldPromptHash: worldPromptHashRef.current,
+          }
+        : null,
       spec: spec
         ? {
             title: spec.title,
@@ -493,7 +720,44 @@ export function AnythingPlay({
       {phase.name === "input" && (
         <main className="stage">
           <Wordmark />
-          <SeedWell seed={phase.seed} />
+          {cameraOpen ? (
+            <CameraCapture
+              onCapture={(blob) => {
+                setCameraOpen(false);
+                acceptSeed(blob, "camera-capture.png");
+              }}
+              onCancel={() => setCameraOpen(false)}
+            />
+          ) : (
+            <>
+              <SeedWell seed={phase.seed} />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+                aria-label="Choose image file"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (file) acceptSeed(file, file.name);
+                }}
+              />
+              <div className="action-row">
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Upload image
+                </button>
+                <button type="button" className="secondary" onClick={() => setCameraOpen(true)}>
+                  Use camera
+                </button>
+              </div>
+              <p className="muted">PNG, JPEG or WebP · up to 10 MB</p>
+            </>
+          )}
           <input
             className="direction"
             aria-label="Direction (optional)"
@@ -505,12 +769,13 @@ export function AnythingPlay({
             type="button"
             className="primary"
             disabled={!phase.seed}
-            onClick={() =>
+            onClick={() => {
+              setCameraOpen(false);
               dispatch({
                 type: "MAKE_PLAYABLE",
                 direction: clampCodePoints(direction, DIRECTION_MAX_CODE_POINTS),
-              })
-            }
+              });
+            }}
           >
             Make playable
           </button>
@@ -596,7 +861,7 @@ export function AnythingPlay({
               <PressButton name="Boost" control="boost" onHold={holdPointer}>
                 BOOST
               </PressButton>
-              <button type="button" className="secondary" onClick={() => dispatch({ type: "RESET" })}>
+              <button type="button" className="secondary" onClick={resetGame}>
                 Stop
               </button>
             </div>
@@ -610,19 +875,168 @@ export function AnythingPlay({
           {phase.outcome === "won" ? (
             <>
               <h2>Course complete</h2>
-              <p className="muted">Finished in {phase.elapsed.toFixed(1)}s</p>
+              {phase.run === "original" ? (
+                <>
+                  <p className="muted">Same world. A new rule.</p>
+                  <div className="action-row">
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() => dispatch({ type: "SPEAK" })}
+                    >
+                      Speak a new rule
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => dispatch({ type: "TYPE" })}
+                    >
+                      Type instead
+                    </button>
+                    <button type="button" className="secondary" onClick={resetGame}>
+                      Make another
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="muted">Cutting the cartridge…</p>
+              )}
             </>
           ) : (
             <>
               <h2>Out of time</h2>
               <p className="muted">{phase.checkpoints}/3 arches cleared</p>
+              <div className="action-row">
+                <button type="button" className="primary" onClick={() => dispatch({ type: "RETRY" })}>
+                  Retry same world
+                </button>
+                <button type="button" className="secondary" onClick={resetGame}>
+                  Make another
+                </button>
+              </div>
             </>
           )}
+        </main>
+      )}
+
+      {phase.name === "patch" && (
+        <main className="stage overlay-panel">
+          {phase.mode === "applied" && phase.patchedSpec ? (
+            <>
+              <p className="applied-rule">
+                TURN RATE ×
+                {phase.patchedSpec.mechanic.turnRate / phase.originalSpec.mechanic.turnRate}
+              </p>
+              <p className="muted">{phase.patchedSpec.cartridgeLine}</p>
+            </>
+          ) : phase.mode === "compiling" ? (
+            <>
+              <p className="transcript">“{phase.transcript}”</p>
+              <p className="muted">Testing the patch</p>
+            </>
+          ) : phase.mode === "idle" ? (
+            <form
+              className="patch-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const transcript = typedRule.trim();
+                if (transcript) void runPatch(transcript);
+              }}
+            >
+              <input
+                className="direction"
+                aria-label="New rule"
+                placeholder="e.g. double the turn rate"
+                value={typedRule}
+                onChange={(event) => setTypedRule(event.target.value)}
+              />
+              <button type="submit" className="primary">
+                Apply rule
+              </button>
+            </form>
+          ) : phase.mode === "listening" ? (
+            <>
+              <p className="mic" aria-hidden="true">
+                ◉
+              </p>
+              <h2>Listening</h2>
+              <p className="muted">Listening — your final words apply automatically</p>
+              {phase.transcript && <p className="transcript">“{phase.transcript}”</p>}
+            </>
+          ) : (
+            <>
+              <p role="alert" className="error-text">
+                {phase.error}
+              </p>
+              <div className="action-row">
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={() => dispatch({ type: "SPEAK" })}
+                >
+                  Retry speech
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => dispatch({ type: "TYPE" })}
+                >
+                  Type instead
+                </button>
+              </div>
+            </>
+          )}
+        </main>
+      )}
+
+      {phase.name === "result" && (
+        <main className="stage overlay-panel">
+          <h2>{phase.cartridge.title}</h2>
+          <div className="cartridge-row">
+            {phase.pngUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                className="cartridge"
+                src={phase.pngUrl}
+                alt={`Game cartridge for ${phase.cartridge.title}: ${phase.cartridge.ruleLabel}, finished in ${phase.cartridge.completionSeconds.toFixed(1)}s`}
+              />
+            ) : (
+              <div className="seed-well">
+                <p className="muted">No cartridge image yet</p>
+              </div>
+            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="cartridge-seed"
+              src={phase.seed.previewUrl}
+              alt={`Original seed: ${phase.seed.originalName}`}
+            />
+          </div>
+          <p className="mono muted">
+            GLIDE · {formatRemaining(phase.cartridge.completionSeconds)}
+          </p>
+          <p className="applied-rule">{phase.cartridge.ruleLabel}</p>
+          <p className="muted">{phase.cartridge.cartridgeLine}</p>
+          {phase.error && (
+            <p role="alert" className="error-text">
+              {phase.error}
+            </p>
+          )}
           <div className="action-row">
-            <button type="button" className="primary" onClick={() => dispatch({ type: "RETRY" })}>
-              Retry same world
-            </button>
-            <button type="button" className="secondary" onClick={() => dispatch({ type: "RESET" })}>
+            {phase.pngUrl ? (
+              <a
+                className="primary download"
+                href={phase.pngUrl}
+                download={cartridgeFilename(phase.cartridge.title)}
+              >
+                Download cartridge
+              </a>
+            ) : (
+              <button type="button" className="primary" onClick={() => void retryCapture()}>
+                Retry capture
+              </button>
+            )}
+            <button type="button" className="secondary" onClick={resetGame}>
               Make another
             </button>
           </div>
