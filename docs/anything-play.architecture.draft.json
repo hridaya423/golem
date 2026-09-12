@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ANYTHING//PLAY: any seed becomes a validated microgame",
+    "output": "anything-play.architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "understand", "label": "1. Understand the seed", "focus": ["input", "normalizer", "astra"], "note": "A doodle, photo, video, or sentence becomes one canonical creative brief." },
+      { "id": "compile", "label": "2. Compile the game", "focus": ["astra", "spec", "validator", "runtime"], "note": "Astra writes bounded rules; validation rejects games that cannot run or finish." },
+      { "id": "play", "label": "3. Play the world", "focus": ["runtime", "world-model", "overlay", "experience"], "note": "Code owns mechanics and state while the world model supplies the live visual world." }
+    ]
+  },
+  "components": [
+    { "id": "input", "type": "external", "label": "Anything", "sublabel": "image, video, or text", "pos": [40, 280], "size": [120, 68] },
+    { "id": "normalizer", "type": "backend", "label": "Seed normalizer", "sublabel": "one CreativeSeed", "pos": [200, 280], "size": [150, 68] },
+    { "id": "astra", "type": "cloud", "label": "GPT-6 Astra", "sublabel": "game designer and compiler", "pos": [390, 280], "size": [150, 68] },
+    { "id": "spec", "type": "database", "label": "GameSpec", "sublabel": "world, rules, goals, parameters", "pos": [580, 80], "size": [170, 68] },
+    { "id": "validator", "type": "backend", "label": "Game validator", "sublabel": "schema, simulation, reachability", "pos": [580, 280], "size": [170, 68] },
+    { "id": "runtime", "type": "backend", "label": "Deterministic runtime", "sublabel": "state, physics, score, win", "pos": [790, 280], "size": [170, 68] },
+    { "id": "world-model", "type": "cloud", "label": "Reactor world model", "sublabel": "live generative renderer", "pos": [990, 170], "size": [180, 68] },
+    { "id": "overlay", "type": "frontend", "label": "Immediate game layer", "sublabel": "rope, targets, HUD, feedback", "pos": [990, 390], "size": [180, 68] },
+    { "id": "experience", "type": "frontend", "label": "Playable microgame", "sublabel": "one-minute challenge", "pos": [1200, 280], "size": [150, 68] }
+  ],
+  "connections": [
+    { "id": "ingest", "from": "input", "to": "normalizer", "label": "raw seed", "variant": "emphasis", "labelAt": [180, 362] },
+    { "id": "brief", "from": "normalizer", "to": "astra", "label": "canonical brief", "labelAt": [370, 362] },
+    { "id": "author", "from": "astra", "to": "spec", "label": "structured game program" },
+    { "id": "check", "from": "spec", "to": "validator", "label": "candidate rules", "labelAt": [665, 162] },
+    { "id": "accept", "from": "validator", "to": "runtime", "label": "validated GameSpec", "variant": "emphasis", "labelAt": [770, 362] },
+    { "id": "camera", "from": "runtime", "to": "world-model", "label": "camera + world commands", "labelAt": [975, 252] },
+    { "id": "state", "from": "runtime", "to": "overlay", "label": "exact game state" },
+    { "id": "pixels", "from": "world-model", "to": "experience", "label": "generated world stream", "variant": "emphasis", "labelAt": [1185, 252] },
+    { "id": "feedback", "from": "overlay", "to": "experience", "label": "instant controls and proof", "variant": "emphasis" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Feasible promise", "items": ["Any seed becomes one of a few polished microgame forms", "Astra may choose rules, but code keeps state and validates the result"] },
+    { "dot": "rose", "title": "Promise to reject", "items": ["Any input becomes any imaginable game with exact world-model physics"] }
+  ]
+}

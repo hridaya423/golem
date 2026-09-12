@@ -1,0 +1,12 @@
+{
+  "taskUUID": "86fd71fc-c7ad-4949-b6cf-a19235b63378",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "imageUUID": "4ddda422-4298-4f07-a743-e2b79ea3d24a",
+  "path": "docs/evidence/design/05-cartridge.webp",
+  "width": 1536,
+  "height": 960,
+  "bytes": 179114,
+  "sha256": "449eab5fd4f5c9fd6b12a22b7a6a076a2dc62c75e7a3f42de75f48eed02ec49e",
+  "elapsedMilliseconds": 31458,
+  "cost": 0.040145
+}

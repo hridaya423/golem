@@ -1,0 +1,17 @@
+{
+  "taskType": "imageInference",
+  "taskUUID": "7aaf6014-ad72-4bbd-b349-8ad38d2a822b",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "positivePrompt": "Create one polished horizontal desktop web application design reference, not a landing page, not a collage of screens, not a device mockup. The product is ANYTHING//PLAY, an image-to-playable-gliding-world experience for a live demo. Experience-mode, high causality, low chrome, generous breathing room. Use EXACT palette: page #070909, raised surface #111514, primary text #f4f7f5, secondary #97a39d, single acid-lime interaction accent #c7ff4a with dark #071000 text. Rational system grotesk typography, medium weight, disciplined negative tracking on display text, readable 16px-equivalent body and monospace utility labels. Medium editorial scale, design variance 6, visual density 3. Four signature motifs: preserved original seed label, three precise route rings, subtly notched cartridge silhouette, concise monospaced information rail. Crisp 6px controls, 12px media corners, 24/32px spacing. One filled primary action only. No gradients, mesh, purple glow, floating blobs, dashboard furniture, sidebar, fake charts, stats, badges, marketing sections, or piles of cards. Render purposeful real UI typography, accessible high contrast, controls at least 44px tall. Only the single requested surface fills the image; no browser chrome. Keep one coherent matte-black and ink-paper brand world. Surface 3: PLAY. The entire viewport is a first-person flight through a vast ink-painted island world, bright paper-gray sky and charcoal floating rocks, cinematic yet materially paper-like. Three circular stone landmarks recede into a clear forward corridor, distant crescent-moon destination. Thin precise acid-lime gameplay rings are overlaid near these large landmarks, the active nearest ring labeled “02”, already-passed ring indicated with a small check, later ring pale. These are exact gameplay overlays, not a cyberpunk cockpit. Restrained dark translucent top safe-area rail: left objective “Pass three rings. Reach the moon gate.”; center “1 / 3”; right large tabular “00:18”. Small preserved seed label thumbnail in one top corner, small ANYTHING//PLAY wordmark. Bottom edge minimal controls hint “A / D turn    W / S pitch    SPACE boost” and a small outlined BOOST held-state control; subtle corner pointer arrows with touch-size targets. Live world image is the sole focal point. No central dialog, surrounding cards, sidebar, graph or dashboard.",
+  "width": 1536,
+  "height": 960,
+  "numberResults": 1,
+  "outputType": "URL",
+  "outputFormat": "WEBP",
+  "deliveryMethod": "sync",
+  "settings": {
+    "quality": "high",
+    "background": "opaque"
+  },
+  "includeCost": true
+}

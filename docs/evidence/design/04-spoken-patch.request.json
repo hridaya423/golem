@@ -1,0 +1,17 @@
+{
+  "taskType": "imageInference",
+  "taskUUID": "1e90a498-2b8c-4ed6-88fb-895dcc593ad5",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "positivePrompt": "Create one polished horizontal desktop web application design reference, not a landing page, not a collage of screens, not a device mockup. The product is ANYTHING//PLAY, an image-to-playable-gliding-world experience for a live demo. Experience-mode, high causality, low chrome, generous breathing room. Use EXACT palette: page #070909, raised surface #111514, primary text #f4f7f5, secondary #97a39d, single acid-lime interaction accent #c7ff4a with dark #071000 text. Rational system grotesk typography, medium weight, disciplined negative tracking on display text, readable 16px-equivalent body and monospace utility labels. Medium editorial scale, design variance 6, visual density 3. Four signature motifs: preserved original seed label, three precise route rings, subtly notched cartridge silhouette, concise monospaced information rail. Crisp 6px controls, 12px media corners, 24/32px spacing. One filled primary action only. No gradients, mesh, purple glow, floating blobs, dashboard furniture, sidebar, fake charts, stats, badges, marketing sections, or piles of cards. Render purposeful real UI typography, accessible high contrast, controls at least 44px tall. Only the single requested surface fills the image; no browser chrome. Keep one coherent matte-black and ink-paper brand world. Surface 4: SPOKEN RULE PATCH, immediately after original win. Keep the same ink-island world as a frozen full-bleed background, intentionally darkened with a clean matte overlay. A large quietly celebratory “Course complete.” heading sits lower-left, followed by readable “Same world. A new rule.” Beneath it a small completion line “3 / 3 gates”. Right-of-center an unboxed listening surface displays a simple microphone glyph and the actual transcript in large restrained mixed-case text: “Double the turn rate.” Below it a concise status “Listening — your final words apply automatically”. One subtle “Type instead” underlined control remains visible. A small original seed thumbnail in the same corner as play maintains identity. No confirm button, no decorative waveform, no chat window, no multiple bright actions. This reference is the listening state after Speak a new rule was pressed. Use asymmetric typographic balance and generous dark negative space, with one thin lime active listening indicator.",
+  "width": 1536,
+  "height": 960,
+  "numberResults": 1,
+  "outputType": "URL",
+  "outputFormat": "WEBP",
+  "deliveryMethod": "sync",
+  "settings": {
+    "quality": "high",
+    "background": "opaque"
+  },
+  "includeCost": true
+}

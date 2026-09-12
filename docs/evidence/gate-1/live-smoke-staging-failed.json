@@ -1,0 +1,20 @@
+{
+  "phase": "error",
+  "mode": "live",
+  "fallbackLevel": 1,
+  "run": null,
+  "world": {
+    "kind": "live",
+    "connection": "disconnected",
+    "hasImage": false,
+    "hasPrompt": false,
+    "generating": false,
+    "chunk": 0,
+    "error": "unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}"
+  },
+  "metrics": {
+    "inputToOverlayMs": [],
+    "commandToChunkMs": null,
+    "firstFrameMs": null
+  }
+}

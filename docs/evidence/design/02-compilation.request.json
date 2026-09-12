@@ -1,0 +1,17 @@
+{
+  "taskType": "imageInference",
+  "taskUUID": "4da3e027-2b22-4149-81b0-6b1ce9a32f80",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "positivePrompt": "Create one polished horizontal desktop web application design reference, not a landing page, not a collage of screens, not a device mockup. The product is ANYTHING//PLAY, an image-to-playable-gliding-world experience for a live demo. Experience-mode, high causality, low chrome, generous breathing room. Use EXACT palette: page #070909, raised surface #111514, primary text #f4f7f5, secondary #97a39d, single acid-lime interaction accent #c7ff4a with dark #071000 text. Rational system grotesk typography, medium weight, disciplined negative tracking on display text, readable 16px-equivalent body and monospace utility labels. Medium editorial scale, design variance 6, visual density 3. Four signature motifs: preserved original seed label, three precise route rings, subtly notched cartridge silhouette, concise monospaced information rail. Crisp 6px controls, 12px media corners, 24/32px spacing. One filled primary action only. No gradients, mesh, purple glow, floating blobs, dashboard furniture, sidebar, fake charts, stats, badges, marketing sections, or piles of cards. Render purposeful real UI typography, accessible high contrast, controls at least 44px tall. Only the single requested surface fills the image; no browser chrome. Keep one coherent matte-black and ink-paper brand world. Surface 2: COMPILATION. This is a calm working state after an image was submitted. Small ANYTHING//PLAY wordmark top-left. Large preserved monochrome floating-island seed image in the left two thirds, matte simple crop; right third a generously spaced unboxed typographic sequence headed “Making it playable”. Exactly four progress rows: “Reading the seed” marked complete, “Writing the rules” marked complete, “Testing the game” active with subtext “Checking the route”, “Warming the world” pending. Use check glyphs, simple numbered circles, and textual state, no spinners or fake percentage bar. Beneath these rows a four-line monospaced decision: “WORLD  Ink islands”, “GAME  Glide”, “RULE  Steer through three rings”, “GOAL  Reach the moon gate”. No primary button needed while work is active. A thin lime motif connects a small ring silhouette in the seed to the active validation row. Emphasize seed continuity, real progress, generous space, crisp readable hierarchy; no fake code wall.",
+  "width": 1536,
+  "height": 960,
+  "numberResults": 1,
+  "outputType": "URL",
+  "outputFormat": "WEBP",
+  "deliveryMethod": "sync",
+  "settings": {
+    "quality": "high",
+    "background": "opaque"
+  },
+  "includeCost": true
+}

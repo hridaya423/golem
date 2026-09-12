@@ -1,0 +1,36 @@
+{
+  "timeline": [
+    {
+      "label": "staging-failed",
+      "at": 1789219700587,
+      "snapshot": {
+        "phase": "error",
+        "mode": "live",
+        "fallbackLevel": 1,
+        "run": null,
+        "world": {
+          "kind": "live",
+          "connection": "disconnected",
+          "hasImage": false,
+          "hasPrompt": false,
+          "generating": false,
+          "chunk": 0,
+          "error": "unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}"
+        },
+        "metrics": {
+          "inputToOverlayMs": [],
+          "commandToChunkMs": null,
+          "firstFrameMs": null
+        }
+      }
+    }
+  ],
+  "consoleErrors": [
+    "error: Failed to load resource: the server responded with a status of 429 ()",
+    "error: [Reactor.ReactorProvider] autoConnect failed: ReactorError: unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n    at toReactorError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:878:12)\n    at Reactor.captureError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:2200:23)\n    at Reactor.connect (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:1633:24)",
+    "error: Failed to load resource: the server responded with a status of 429 ()",
+    "error: [Reactor.ReactorProvider] autoConnect failed: ReactorError: unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n    at toReactorError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:878:12)\n    at Reactor.captureError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:2200:23)\n    at Reactor.connect (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:1633:24)",
+    "error: Failed to load resource: the server responded with a status of 429 ()",
+    "error: [Reactor.ReactorProvider] autoConnect failed: ReactorError: unexpected HTTP status 429 from create session: {\"error\":\"no available capacity: no available servers to handle the request\"}\n    at toReactorError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:878:12)\n    at Reactor.captureError (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:2200:23)\n    at Reactor.connect (http://127.0.0.1:3000/_next/static/chunks/node_modules__pnpm_11wqf6i._.js:1633:24)"
+  ]
+}

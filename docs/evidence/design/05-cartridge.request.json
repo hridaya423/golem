@@ -1,0 +1,17 @@
+{
+  "taskType": "imageInference",
+  "taskUUID": "86fd71fc-c7ad-4949-b6cf-a19235b63378",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "positivePrompt": "Create one polished horizontal desktop web application design reference, not a landing page, not a collage of screens, not a device mockup. The product is ANYTHING//PLAY, an image-to-playable-gliding-world experience for a live demo. Experience-mode, high causality, low chrome, generous breathing room. Use EXACT palette: page #070909, raised surface #111514, primary text #f4f7f5, secondary #97a39d, single acid-lime interaction accent #c7ff4a with dark #071000 text. Rational system grotesk typography, medium weight, disciplined negative tracking on display text, readable 16px-equivalent body and monospace utility labels. Medium editorial scale, design variance 6, visual density 3. Four signature motifs: preserved original seed label, three precise route rings, subtly notched cartridge silhouette, concise monospaced information rail. Crisp 6px controls, 12px media corners, 24/32px spacing. One filled primary action only. No gradients, mesh, purple glow, floating blobs, dashboard furniture, sidebar, fake charts, stats, badges, marketing sections, or piles of cards. Render purposeful real UI typography, accessible high contrast, controls at least 44px tall. Only the single requested surface fills the image; no browser chrome. Keep one coherent matte-black and ink-paper brand world. Surface 5: RESULT. Center the earned downloadable Game Cartridge as a beautiful large flat artifact, no 3D perspective and no device mockup. The cartridge is a broad 1600:1000 proportion with subtly clipped/notched bottom corners. Its top is a pair of equally meaningful images: original monochrome ink drawing of floating islands on the left, detailed generated first-person world frame after flight on the right, a natural evolution rather than two identical crops. A matte charcoal information rail below contains “INK ISLANDS” as the dominant title, “GLIDE”, a compact white path trace through three ring markers, tabular “00:22.4”, and clear lime “TURN RATE ×2”. Small tagline “A sharper turn through a world you drew.” Fine short labels distinguish “ORIGINAL SEED” and “YOUR WORLD”. In the surrounding app below the artifact one unmistakable lime “Download cartridge” button and secondary text “Make another”. Top-left small ANYTHING//PLAY wordmark. Artifacts and essential text readable at projector distance. Dark spacious page, finished collectible feeling, no confetti, gradients, share links, terminal or marketing content.",
+  "width": 1536,
+  "height": 960,
+  "numberResults": 1,
+  "outputType": "URL",
+  "outputFormat": "WEBP",
+  "deliveryMethod": "sync",
+  "settings": {
+    "quality": "high",
+    "background": "opaque"
+  },
+  "includeCost": true
+}

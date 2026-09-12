@@ -1,0 +1,17 @@
+{
+  "taskType": "imageInference",
+  "taskUUID": "033df4d6-0c9a-4594-a98c-90f64e83f6c9",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "positivePrompt": "A landscape 1664 by 960 reference frame for first-person forward gliding through a monochrome ink archipelago. This is a world illustration, not a website or interface. Elegant ink-wash drawings on luminous pale rice paper: floating dark basalt-paper islands flank a broad open corridor through the center. Strong clear level horizon at 45 percent of image height, soft atmospheric depth, three and only three large ancient circular stone arch landmarks standing along the forward corridor, visibly separated by distance: one large near arch centered slightly left, a medium arch farther slightly right, a small third arch near center. A distant crescent-moon gate beyond them forms the destination. Open air under and around each arch, forgiving spacious flight path. Camera floating steadily above the paper sea, eye level, no visible person or vehicle. Charcoal, warm white paper, delicate gray mist, highly legible silhouette design, hand-drawn ink edges and detailed rocky island textures concentrated at the sides. Quiet wonder and immense scale. The center remains navigable and uncluttered. Exactly three large route arches plus one distant moon-shaped destination. No text, labels, logos, UI, borders, HUD, humans, crowds, weapons, tiny doors or precision platforms. Fill the entire frame with the illustrated world.",
+  "width": 1664,
+  "height": 960,
+  "numberResults": 1,
+  "outputType": "URL",
+  "outputFormat": "WEBP",
+  "deliveryMethod": "sync",
+  "settings": {
+    "quality": "high",
+    "background": "opaque"
+  },
+  "includeCost": true
+}

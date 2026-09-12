@@ -1,0 +1,41 @@
+{
+  "phase": "playing",
+  "mode": "live",
+  "fallbackLevel": 1,
+  "run": {
+    "status": "running",
+    "elapsed": 7.499999999999979,
+    "activeGate": 1,
+    "completed": [
+      "cp1"
+    ],
+    "position": [
+      0,
+      12,
+      97.6000000000003
+    ],
+    "yaw": 0,
+    "pitch": 0,
+    "speed": 24,
+    "respawns": 1
+  },
+  "world": {
+    "kind": "live",
+    "connection": "ready",
+    "hasImage": true,
+    "hasPrompt": true,
+    "generating": true,
+    "chunk": 13,
+    "sessionId": "df74f535-a38c-4aea-9507-f56973f8f3c4",
+    "lastChunkAt": 17085.699999999255,
+    "firstFrameAt": 9973.5,
+    "lastCommandAt": 11604.400000000373
+  },
+  "metrics": {
+    "inputToOverlayMs": [
+      8.166000000745044
+    ],
+    "commandToChunkMs": 5481.299999998882,
+    "firstFrameMs": 9763.400000000373
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "taskType": "imageInference",
+  "taskUUID": "faefe380-6f0e-43a7-a631-8093460d295b",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "positivePrompt": "Create one polished horizontal desktop web application design reference, not a landing page, not a collage of screens, not a device mockup. The product is ANYTHING//PLAY, an image-to-playable-gliding-world experience for a live demo. Experience-mode, high causality, low chrome, generous breathing room. Use EXACT palette: page #070909, raised surface #111514, primary text #f4f7f5, secondary #97a39d, single acid-lime interaction accent #c7ff4a with dark #071000 text. Rational system grotesk typography, medium weight, disciplined negative tracking on display text, readable 16px-equivalent body and monospace utility labels. Medium editorial scale, design variance 6, visual density 3. Four signature motifs: preserved original seed label, three precise route rings, subtly notched cartridge silhouette, concise monospaced information rail. Crisp 6px controls, 12px media corners, 24/32px spacing. One filled primary action only. No gradients, mesh, purple glow, floating blobs, dashboard furniture, sidebar, fake charts, stats, badges, marketing sections, or piles of cards. Render purposeful real UI typography, accessible high contrast, controls at least 44px tall. Only the single requested surface fills the image; no browser chrome. Keep one coherent matte-black and ink-paper brand world. Surface 1: INPUT. Top-left small ANYTHING//PLAY wordmark. The seed is the focal point, not a giant headline: centered large 16:9 image well displaying a beautiful monochrome ink drawing of floating islands with three circular stone arches in a clear corridor and a distant moon. Compact headline above reads “An image. A world. Your rules.” The preserved seed image occupies most of the middle area, like the label face of a game cartridge. Below the well a precise narrow action rail: understated outlined “Upload image” and “Use camera” controls left; a labeled single-line “Direction · optional” input with placeholder “Give it a little more altitude” across the middle; one lime rectangular “Make playable” button on the right. Beneath, quiet concise text “PNG, JPEG or WebP · up to 10 MB”. All main content comfortably visible at laptop height. No previews of later screens, no steps, no nav links, no fake metrics. Composition is centered image-as-canvas with tiny peripheral typography, not text-left/image-right.",
+  "width": 1536,
+  "height": 960,
+  "numberResults": 1,
+  "outputType": "URL",
+  "outputFormat": "WEBP",
+  "deliveryMethod": "sync",
+  "settings": {
+    "quality": "high",
+    "background": "opaque"
+  },
+  "includeCost": true
+}

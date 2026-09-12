@@ -1,0 +1,12 @@
+{
+  "taskUUID": "1e90a498-2b8c-4ed6-88fb-895dcc593ad5",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "imageUUID": "8af2286c-3f69-4cda-9705-bc577e75f5bf",
+  "path": "docs/evidence/design/04-spoken-patch.webp",
+  "width": 1536,
+  "height": 960,
+  "bytes": 97446,
+  "sha256": "fee663f0abfd4f7fb3bf486193cc301921e8e22760f896e8837aaaf1fe198ab7",
+  "elapsedMilliseconds": 30687,
+  "cost": 0.03996
+}

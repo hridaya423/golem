@@ -1,0 +1,12 @@
+{
+  "taskUUID": "033df4d6-0c9a-4594-a98c-90f64e83f6c9",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "imageUUID": "e9867c45-fa31-4d49-9b88-8c704799df2c",
+  "path": "public/fixtures/glide-ink-islands.webp",
+  "width": 1664,
+  "height": 960,
+  "bytes": 441632,
+  "sha256": "73b41252fdf6f99f1af442b967ef61c480213c528fc8ebc22b284c6023c76f42",
+  "elapsedMilliseconds": 32290,
+  "cost": 0.037585
+}

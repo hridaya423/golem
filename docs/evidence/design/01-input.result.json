@@ -1,0 +1,12 @@
+{
+  "taskUUID": "faefe380-6f0e-43a7-a631-8093460d295b",
+  "model": "openai:gpt-image@2.5-sunburst",
+  "imageUUID": "95e779e5-f693-4e3b-91b0-afaf8ecb1b59",
+  "path": "docs/evidence/design/01-input.webp",
+  "width": 1536,
+  "height": 960,
+  "bytes": 240276,
+  "sha256": "5f4daa993987c63936eb6c2493149f88e5163c8e16cbd5ae85cf79985a14c44f",
+  "elapsedMilliseconds": 32385,
+  "cost": 0.040055
+}
