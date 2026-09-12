@@ -1,0 +1,29 @@
+{
+  "sessionRequests": 1,
+  "sessionStatuses": [
+    201
+  ],
+  "report": {
+    "status": "failed",
+    "marks": {
+      "loading": 0,
+      "authenticating": 59,
+      "connecting": 586,
+      "building": 6363,
+      "failed": 10543
+    },
+    "worldPhase": "no_world",
+    "worldId": null,
+    "sessionId": "2c34a92d-38c6-436a-be6c-9a17df765eff",
+    "connectionStates": [
+      "connecting",
+      "waiting",
+      "ready",
+      "disconnected"
+    ],
+    "firstFrame": false,
+    "videoSize": [],
+    "error": "Unable to connect to Reactor. (400001)",
+    "disconnected": true
+  }
+}

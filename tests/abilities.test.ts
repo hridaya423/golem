@@ -5,10 +5,13 @@ import { buildHoopMesh, type HoopPalette } from "../src/game/hoops.ts";
 import {
   ABILITY_CALIBRATION as A,
   IDLE_ABILITIES,
+  ENEMY_STATS,
   createAbilityState,
   releaseAbilities,
   stepAbilities,
   type AbilityInput,
+  type AbilityTarget,
+  type EnemyKind,
 } from "../src/game/abilities.ts";
 import {
   FIXTURE_COURSE,
@@ -23,6 +26,7 @@ import {
 const course = FIXTURE_COURSE;
 const press = (input: Partial<AbilityInput>): AbilityInput => ({ ...IDLE_ABILITIES, ...input });
 const ticks = (seconds: number) => Math.ceil(seconds / GLIDE_CALIBRATION.step);
+const at = (target: AbilityTarget, position: Vec3): AbilityTarget => ({ ...target, origin: position, position, phase: 0 });
 const aim = (player: GlideState, target: Vec3): GlideState => {
   const dx = target[0] - player.position[0], dy = target[1] - player.position[1], dz = target[2] - player.position[2];
   return { ...player, yaw: Math.atan2(dx, dz), pitch: Math.atan2(dy, Math.hypot(dx, dz)) };
@@ -46,6 +50,7 @@ test("targets follow the supplied course route and start rather than fixture coo
   const abilities = createAbilityState(translated);
   assert.deepEqual(abilities.targets, original.targets.map((target) => ({
     ...target, position: target.position.map((value, i) => value + offset[i]),
+    origin: target.origin.map((value, i) => value + offset[i]),
   })));
   assert.deepEqual(translated, snapshot);
 });
@@ -162,7 +167,7 @@ test("gate change, respawn, stale anchor and range break detach until E is relea
 test("releaseAbilities instantly clears effects and held input without ticking cooldowns or erasing score", () => {
   const player = nearGate();
   const base = createAbilityState(course);
-  const target = { ...base.targets[0], hp: 1, position: [player.position[0], player.position[1], player.position[2] + 50] as Vec3 };
+  const target = at({ ...base.targets[0], hp: 1 }, [player.position[0], player.position[1], player.position[2] + 50]);
   const active = stepAbilities({ ...base, targets: [target] }, press({ dash: true, grapple: true, fire: true }), player, course).abilities;
   assert.equal(active.score, A.targetScore);
   assert.ok(active.dashRemaining > 0 && active.grappleAnchor && active.shotTrace);

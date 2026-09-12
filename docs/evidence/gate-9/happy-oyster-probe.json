@@ -1,0 +1,19 @@
+{
+  "sessionRequests": 1,
+  "report": {
+    "status": "failed",
+    "marks": {
+      "loading": 0,
+      "authenticating": 48,
+      "connecting": 802,
+      "failed": 2380
+    },
+    "worldPhase": null,
+    "worldId": null,
+    "sessionId": null,
+    "firstFrame": false,
+    "videoSize": [],
+    "error": "Reactor connection interrupted. Please retry. (REQUEST_TIMEOUT)",
+    "disconnected": true
+  }
+}

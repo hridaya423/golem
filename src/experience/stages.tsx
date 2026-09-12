@@ -45,7 +45,7 @@ export function StatusPill({ status, onRetry }: { status: WorldStatus; onRetry: 
     : status.connection === "connecting"
       ? "Requesting a live session"
       : status.connection === "waiting"
-        ? "Connecting the live stream"
+        ? "Waiting for the live world"
         : ready
           ? status.generating && status.firstFrameAt !== undefined ? "Live stream ready" : "Live connection ready"
           : "World disconnected";
@@ -54,7 +54,7 @@ export function StatusPill({ status, onRetry }: { status: WorldStatus; onRetry: 
     : status.connection === "connecting"
       ? "Reactor is connecting while you prepare your game."
       : status.connection === "waiting"
-        ? "Session created. Establishing the media connection. No need to refresh."
+        ? "Session accepted. Waiting for GPU assignment and stream connection. Keep this tab open."
         : ready
           ? status.generating ? "This session stays connected for your rule change and replay." : "Your session is connected. Generation begins once the image and rules are ready."
           : "Reconnect to continue with live generation.";

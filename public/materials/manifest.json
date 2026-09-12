@@ -1,0 +1,116 @@
+{
+  "provider": "ambientCG",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "providerLicenseUrl": "https://docs.ambientcg.com/license/",
+  "licenseVerification": "The official provider license page explicitly permits copying, modifying, distributing, commercial use, and inclusion of raw downloadable asset files in games.",
+  "conversion": {
+    "tool": "sharp 0.35.4",
+    "sourceResolution": [1024, 1024],
+    "outputResolution": [512, 512],
+    "resizeKernel": "lanczos3",
+    "format": "webp",
+    "colorMapEncoding": { "quality": 84, "effort": 6 },
+    "colorMapColorSpace": "sRGB",
+    "normalMapConvention": "OpenGL (+Y), tangent-space RGB; sample as linear data, not sRGB",
+    "notes": "Actual Color and NormalGL texture maps extracted from official 1K-JPG PBR bundles, not lit previews. Source JPEGs are already lossy. Metal normal uses lossless WebP; wood and fabric use near-lossless WebP; stone uses quality-95 lossy WebP to keep each file below 250000 bytes. No material tint or appearance choices are baked into these conversions."
+  },
+  "materials": {
+    "metal": {
+      "assetId": "Metal030",
+      "description": "Smooth grey metal",
+      "sourceUrl": "https://ambientcg.com/view?id=Metal030",
+      "downloadUrl": "https://ambientcg.com/get?file=Metal030_1K-JPG.zip",
+      "resolvedDownloadUrl": "https://acg-download.struffelproductions.com/file/ambientCG-Web/download/Metal030_C3Pw69aA/Metal030_1K-JPG.zip",
+      "archiveFilename": "Metal030_1K-JPG.zip",
+      "archiveBytes": 3096905,
+      "color": {
+        "path": "/materials/metal-color.webp",
+        "originalFilename": "Metal030_1K-JPG_Color.jpg",
+        "width": 512,
+        "height": 512,
+        "bytes": 780
+      },
+      "normal": {
+        "path": "/materials/metal-normal.webp",
+        "originalFilename": "Metal030_1K-JPG_NormalGL.jpg",
+        "width": 512,
+        "height": 512,
+        "bytes": 83620,
+        "encoding": { "lossless": true, "effort": 6 }
+      }
+    },
+    "stone": {
+      "assetId": "Rock030",
+      "description": "Grey cliff rock",
+      "sourceUrl": "https://ambientcg.com/view?id=Rock030",
+      "downloadUrl": "https://ambientcg.com/get?file=Rock030_1K-JPG.zip",
+      "resolvedDownloadUrl": "https://acg-download.struffelproductions.com/file/ambientCG-Web/download/Rock030_qL2Hjn36/Rock030_1K-JPG.zip",
+      "archiveFilename": "Rock030_1K-JPG.zip",
+      "archiveBytes": 9677446,
+      "color": {
+        "path": "/materials/stone-color.webp",
+        "originalFilename": "Rock030_1K-JPG_Color.jpg",
+        "width": 512,
+        "height": 512,
+        "bytes": 74782
+      },
+      "normal": {
+        "path": "/materials/stone-normal.webp",
+        "originalFilename": "Rock030_1K-JPG_NormalGL.jpg",
+        "width": 512,
+        "height": 512,
+        "bytes": 184516,
+        "encoding": { "quality": 95, "effort": 6 }
+      }
+    },
+    "wood": {
+      "assetId": "Wood048",
+      "description": "Light plain smooth wood",
+      "sourceUrl": "https://ambientcg.com/view?id=Wood048",
+      "downloadUrl": "https://ambientcg.com/get?file=Wood048_1K-JPG.zip",
+      "resolvedDownloadUrl": "https://acg-download.struffelproductions.com/file/ambientCG-Web/download/Wood048_OZqjXdJD/Wood048_1K-JPG.zip",
+      "archiveFilename": "Wood048_1K-JPG.zip",
+      "archiveBytes": 7042735,
+      "color": {
+        "path": "/materials/wood-color.webp",
+        "originalFilename": "Wood048_1K-JPG_Color.jpg",
+        "width": 512,
+        "height": 512,
+        "bytes": 41440
+      },
+      "normal": {
+        "path": "/materials/wood-normal.webp",
+        "originalFilename": "Wood048_1K-JPG_NormalGL.jpg",
+        "width": 512,
+        "height": 512,
+        "bytes": 219016,
+        "encoding": { "nearLossless": true, "quality": 85, "effort": 6 }
+      }
+    },
+    "fabric": {
+      "assetId": "Fabric026",
+      "description": "Red cloth / carpet fabric",
+      "sourceUrl": "https://ambientcg.com/view?id=Fabric026",
+      "downloadUrl": "https://ambientcg.com/get?file=Fabric026_1K-JPG.zip",
+      "resolvedDownloadUrl": "https://acg-download.struffelproductions.com/file/ambientCG-Web/download/Fabric026_dVQDK8IO/Fabric026_1K-JPG.zip",
+      "archiveFilename": "Fabric026_1K-JPG.zip",
+      "archiveBytes": 8021292,
+      "color": {
+        "path": "/materials/fabric-color.webp",
+        "originalFilename": "Fabric026_1K-JPG_Color.jpg",
+        "width": 512,
+        "height": 512,
+        "bytes": 59660
+      },
+      "normal": {
+        "path": "/materials/fabric-normal.webp",
+        "originalFilename": "Fabric026_1K-JPG_NormalGL.jpg",
+        "width": 512,
+        "height": 512,
+        "bytes": 189864,
+        "encoding": { "nearLossless": true, "quality": 45, "effort": 6 }
+      }
+    }
+  }
+}

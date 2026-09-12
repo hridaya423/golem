@@ -62,3 +62,51 @@ test("live Reactor world: stage fixture, hold a turn, record coupling telemetry"
     await video.saveAs(path.join(EVIDENCE_DIR, `live-play-${testInfo.workerIndex}.webm`));
   }
 });
+
+test("Happy Oyster: one bounded Reactor world and steering probe", async ({ page }) => {
+  test.skip(process.env.HAPPY_OYSTER_PROBE !== "1", "requires HAPPY_OYSTER_PROBE=1");
+  const out = "docs/evidence/gate-9";
+  mkdirSync(out, { recursive: true });
+  const prefix = `happy-oyster-${Date.now()}`;
+  const sessionStatuses: number[] = [];
+  console.log(`Evidence: ${out}/${prefix}.json`);
+  page.on("response", (response) => {
+    if (response.url() === "https://api.reactor.inc/sessions" && response.request().method() === "POST") sessionStatuses.push(response.status());
+  });
+  let sessionRequests = 0;
+  let report: { status?: string; firstFrame?: boolean; disconnected?: boolean; error?: string | null } | null = null;
+  const captured = new Set<string>();
+  await page.route("https://api.reactor.inc/sessions", async (route) => {
+    if (route.request().method() === "POST" && ++sessionRequests > 1) return route.abort("blockedbyclient");
+    return route.continue();
+  });
+  try {
+    await page.goto("/?operator=1&probe=happy-oyster");
+    await page.getByRole("button", { name: "Run one paid probe" }).click();
+    const deadline = Date.now() + 210_000;
+    while (Date.now() < deadline) {
+      report = JSON.parse(await page.locator("#happy-probe-report").innerText());
+      const status = report?.status ?? "unknown";
+      if (!captured.has(status)) {
+        captured.add(status);
+        console.log(`Happy Oyster: ${status}`);
+        if (["first-frame", "forward", "turn-right", "turn-left"].includes(status)) {
+          await page.waitForTimeout(status === "first-frame" ? 100 : 1800);
+          await page.screenshot({ path: path.join(out, `${prefix}-${status}.png`) });
+        }
+      }
+      if (report?.disconnected && ["passed", "failed"].includes(status)) break;
+      await page.waitForTimeout(250);
+    }
+    expect(report?.status, report?.error ?? "Probe did not complete").toBe("passed");
+    expect(report?.firstFrame).toBe(true);
+    expect(report?.disconnected).toBe(true);
+    expect(sessionRequests).toBe(1);
+  } finally {
+    writeFileSync(path.join(out, `${prefix}.json`), JSON.stringify({ sessionRequests, sessionStatuses, report }, null, 2));
+    await page.screenshot({ path: path.join(out, `${prefix}-final.png`) }).catch(() => {});
+    const video = page.video();
+    await page.context().close();
+    if (video) await video.saveAs(path.join(out, `${prefix}.webm`));
+  }
+});

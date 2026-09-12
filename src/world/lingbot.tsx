@@ -51,7 +51,7 @@ async function fetchToken(): Promise<string> {
   return inflightToken;
 }
 
-const CONNECTION_OPTIONS = { autoConnect: false, maxAttempts: 1 };
+const CONNECTION_OPTIONS = { autoConnect: false };
 
 export function LiveWorldProvider({ children }: { children: ReactNode }) {
   return (
@@ -179,7 +179,7 @@ export function LingbotWorld({ onDriver }: { onDriver: (driver: WorldDriver) => 
       }
       clearTimer();
       store.set({ error: undefined, retryAt: undefined, retryAttempt: undefined });
-      connecting = connect(fetchToken, { maxAttempts: 1 })
+      connecting = connect(fetchToken)
         .then(() => {
           if (disposed || stopped) return;
           retries = 0;

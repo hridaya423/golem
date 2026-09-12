@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { GlideCourse } from "./glide.ts";
+import type { ParkourCourse } from "./parkour.ts";
 
 // Trust-boundary budgets (PLAN.md "Fixed trust-boundary budgets"). Course envelope numbers come
 // from the Gate 1 calibration recorded in PROGRESS.md.
@@ -54,6 +55,23 @@ export const GameRulesSchema = z.strictObject({
   respawnBehindDistance: finite(SPEC_LIMITS.respawnBehind.min, SPEC_LIMITS.respawnBehind.max),
 });
 
+export const HoopAppearanceSchema = z.strictObject({
+  material: z.enum(["reference", "metal", "stone", "wood", "fabric"]),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable(),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable(),
+  roughness: finite(0.08, 1),
+  metalness: finite(0, 1),
+  textureScale: finite(0.5, 6),
+  emissive: finite(0, 0.6),
+});
+
+export type HoopAppearance = z.infer<typeof HoopAppearanceSchema>;
+
+export const DEFAULT_HOOP_APPEARANCE: HoopAppearance = {
+  material: "reference", color: null, accentColor: null,
+  roughness: 0.82, metalness: 0.08, textureScale: 2, emissive: 0.04,
+};
+
 const LandmarkSchema = z.strictObject({ id, description: text(SPEC_LIMITS.landmark) });
 
 /** World identity as the model may author it: no seed, no technical identity. */
@@ -70,6 +88,7 @@ export const GameSpecCandidateSchema = z.strictObject({
   tagline: text(SPEC_LIMITS.tagline),
   world: WorldCandidateSchema,
   mechanic: GlideSpecSchema,
+  hoops: HoopAppearanceSchema,
   entities: z.array(ProxyEntitySchema).length(5).readonly(),
   rules: GameRulesSchema,
   cartridgeLine: text(SPEC_LIMITS.cartridgeLine),

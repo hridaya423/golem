@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { tokenRequestBody } from "@/world/reactor-contract";
+import { ReactorModelSchema, tokenRequestBody } from "@/world/reactor-contract";
 
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const model = ReactorModelSchema.safeParse(new URL(request.url).searchParams.get("model") ?? "reactor/lingbot-world-2");
+  if (!model.success) return NextResponse.json({ error: "Unsupported world model" }, { status: 400 });
   const apiKey = process.env.REACTOR_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
@@ -14,7 +16,7 @@ export async function POST() {
   const upstream = await fetch("https://api.reactor.inc/tokens", {
     method: "POST",
     headers: { "Reactor-API-Key": apiKey, "Content-Type": "application/json" },
-    body: JSON.stringify(tokenRequestBody()),
+    body: JSON.stringify(tokenRequestBody(model.data)),
     cache: "no-store",
   });
   if (!upstream.ok) {

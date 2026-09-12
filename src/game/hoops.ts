@@ -1,4 +1,6 @@
 import { forwardOf, projectPoint, routeOf, type GlideCourse, type GlideState, type ProxyEntity, type Vec3 } from "./glide.ts";
+import { drawHoopSurface, type HoopSurface } from "./hoop-material.ts";
+export { loadHoopSurface, releaseHoopSurface, type HoopSurface } from "./hoop-material.ts";
 
 type HoopFace = {
   vertices: readonly Vec3[];
@@ -166,7 +168,7 @@ function drawLabel(ctx: CanvasRenderingContext2D, state: GlideState, gate: Proxy
   ctx.fillText(text, x, y);
 }
 
-export function drawHoops(ctx: CanvasRenderingContext2D, state: GlideState, course: GlideCourse, palette?: HoopPalette): void {
+export function drawHoops(ctx: CanvasRenderingContext2D, state: GlideState, course: GlideCourse, palette?: HoopPalette, surface?: HoopSurface): void {
   const { width, height } = ctx.canvas;
   if (width <= 0 || height <= 0) return;
   const route = routeOf(course);
@@ -177,6 +179,15 @@ export function drawHoops(ctx: CanvasRenderingContext2D, state: GlideState, cour
   const rimColor = palette ? shades[24] : "#dddccd";
   const ui = height / (ctx.canvas.clientHeight || height);
   const forward = forwardOf(state.yaw, state.pitch);
+  if (surface) {
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+    const rendered = drawHoopSurface(ctx, state, route, palette ?? DEFAULT_PALETTE, surface);
+    if (rendered) drawLabel(ctx, state, active, forward, ui);
+    ctx.restore();
+    if (rendered) return;
+  }
   const depthOf = (point: Vec3) => (point[0] - state.position[0]) * forward[0] + (point[1] - state.position[1]) * forward[1] + (point[2] - state.position[2]) * forward[2];
   const project = (vertices: readonly Vec3[]) => {
     const near = clipPolygon(vertices, (point) => depthOf(point) - NEAR);

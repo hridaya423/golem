@@ -1,5 +1,5 @@
 import { FIXTURE_COURSE } from "./glide.ts";
-import type { GameSpecCandidate, ValidatedGameSpec } from "./spec.ts";
+import { DEFAULT_HOOP_APPEARANCE, type GameSpecCandidate, type ValidatedGameSpec } from "./spec.ts";
 import { validateGameSpecCandidate } from "./validate.ts";
 import { FIXTURE_WORLD } from "../world/prompts.ts";
 
@@ -14,6 +14,7 @@ export const FALLBACK_CANDIDATE: GameSpecCandidate = {
     perspective: "first_person",
   },
   mechanic: { ...FIXTURE_COURSE.mechanic },
+  hoops: { ...DEFAULT_HOOP_APPEARANCE },
   entities: [...FIXTURE_COURSE.entities],
   rules: { ...FIXTURE_COURSE.rules },
   cartridgeLine: "Three arches, one moon gate, no second chances.",

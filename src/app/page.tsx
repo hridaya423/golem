@@ -1,4 +1,5 @@
 import { Golem } from "../experience/Golem";
+import { HappyOysterProbe } from "../experience/HappyOysterProbe";
 
 export default async function Home({
   searchParams,
@@ -6,6 +7,7 @@ export default async function Home({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
+  if (params.operator === "1" && params.probe === "happy-oyster") return <HappyOysterProbe />;
   const mode =
     process.env.GOLEM_TEST_WORLD === "fake" && params.world !== "live" ? "fake" : "live";
   const operator = params.operator === "1";

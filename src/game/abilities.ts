@@ -5,7 +5,7 @@ import {
   routeOf,
   segmentHitsSphere,
   startOf,
-  type GlideCourse,
+  type RouteCourse,
   type GlideInput,
   type GlideState,
   type Vec3,
@@ -30,9 +30,28 @@ export const ABILITY_CALIBRATION = {
   targetRadius: 5,
   targetScore: 100,
   traceDuration: 0.18,
+  hitFlashDuration: 0.25,
 } as const;
 
-export type AbilityTarget = { id: string; position: Vec3; radius: number; hp: number };
+export type EnemyKind = "scout" | "striker" | "bulwark";
+export const ENEMY_LABELS: Record<EnemyKind, string> = { scout: "Scout", striker: "Striker", bulwark: "Bulwark" };
+export const ENEMY_STATS = {
+  scout: { hp: 2, radius: 5, score: 100 },
+  striker: { hp: 1, radius: 4, score: 150 },
+  bulwark: { hp: 4, radius: 7, score: 250 },
+} as const;
+
+export type AbilityTarget = {
+  id: string;
+  kind: EnemyKind;
+  origin: Vec3;
+  position: Vec3;
+  radius: number;
+  hp: number;
+  maxHp: number;
+  phase: number;
+  hitFlash: number;
+};
 export type AbilityState = {
   dashCooldown: number;
   dashRemaining: number;
@@ -56,23 +75,35 @@ export type AbilityState = {
 const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
 const tick = (remaining: number) => remaining <= GLIDE_CALIBRATION.step + 1e-9 ? 0 : remaining - GLIDE_CALIBRATION.step;
 
-export function createAbilityState(course: GlideCourse): AbilityState {
+function targetPosition(target: AbilityTarget, elapsed: number, previous: Vec3, gate: Vec3, radius: number): Vec3 {
+  if (target.hp === 0 || target.kind === "bulwark") return target.position;
+  const [x, y, z] = target.origin;
+  if (target.kind === "scout") return [x, y + Math.sin(elapsed * 1.4 + target.phase) * Math.min(1.2, radius * 0.06), z];
+  const dx = gate[0] - previous[0], dz = gate[2] - previous[2];
+  const length = Math.hypot(dx, dz) || 1;
+  const patrol = Math.sin(elapsed * 2.4 + target.phase) * Math.min(3, radius * 0.15);
+  return [x + dz / length * patrol, y, z - dx / length * patrol];
+}
+
+export function createAbilityState(course: RouteCourse, enemies: readonly EnemyKind[] = ["scout", "striker", "bulwark"]): AbilityState {
   const route = routeOf(course);
   const targets = route.slice(0, 3).map((gate, index): AbilityTarget => {
     const previous = index === 0 ? startOf(course) : route[index - 1];
     const dx = gate.position[0] - previous.position[0], dz = gate.position[2] - previous.position[2];
     const length = Math.hypot(dx, dz) || 1;
     const offset = Math.min(gate.radius * 0.35, 7) * (index % 2 ? -1 : 1);
-    return {
-      id: `sentinel-${index + 1}`,
-      position: [
-        (previous.position[0] + gate.position[0]) / 2 + dz / length * offset,
-        (previous.position[1] + gate.position[1]) / 2,
-        (previous.position[2] + gate.position[2]) / 2 - dx / length * offset,
-      ],
-      radius: ABILITY_CALIBRATION.targetRadius,
-      hp: ABILITY_CALIBRATION.targetHp,
+    const origin: Vec3 = [
+      (previous.position[0] + gate.position[0]) / 2 + dz / length * offset,
+      (previous.position[1] + gate.position[1]) / 2,
+      (previous.position[2] + gate.position[2]) / 2 - dx / length * offset,
+    ];
+    const kind = enemies[index] ?? "scout";
+    const stats = ENEMY_STATS[kind];
+    const target: AbilityTarget = {
+      id: `sentinel-${index + 1}`, kind, origin, position: origin,
+      radius: stats.radius, hp: stats.hp, maxHp: stats.hp, phase: index * 1.7, hitFlash: 0,
     };
+    return { ...target, position: targetPosition(target, 0, previous.position, gate.position, gate.radius) };
   });
   return {
     dashCooldown: 0, dashRemaining: 0, fireCooldown: 0,
@@ -94,7 +125,7 @@ export function stepAbilities(
   abilities: AbilityState,
   input: AbilityInput,
   player: GlideState,
-  course: GlideCourse,
+  course: RouteCourse,
 ): { abilities: AbilityState; input: GlideInput; speedMultiplier: number } {
   if (player.status !== "running") {
     return {
@@ -104,6 +135,7 @@ export function stepAbilities(
   }
 
   const C = ABILITY_CALIBRATION;
+  const route = routeOf(course);
   const respawned = player.respawns !== abilities.lastRespawns || player.event === "respawn";
   const gateChanged = player.activeGate !== abilities.lastActiveGate;
   const next: AbilityState = {
@@ -111,6 +143,14 @@ export function stepAbilities(
     dashCooldown: tick(abilities.dashCooldown),
     dashRemaining: respawned ? 0 : tick(abilities.dashRemaining),
     fireCooldown: tick(abilities.fireCooldown),
+    targets: abilities.targets.map((target, index) => {
+      const gate = route[index];
+      const previous = index === 0 ? startOf(course) : route[index - 1];
+      return {
+        ...target, hitFlash: tick(target.hitFlash),
+        position: gate && previous ? targetPosition(target, player.elapsed, previous.position, gate.position, gate.radius) : target.position,
+      };
+    }),
     held: { ...input }, lastActiveGate: player.activeGate, lastRespawns: player.respawns,
     shotTrace: abilities.shotTrace && tick(abilities.shotTrace.remaining) > 0 && !respawned
       ? { ...abilities.shotTrace, remaining: tick(abilities.shotTrace.remaining) } : null,
@@ -120,7 +160,7 @@ export function stepAbilities(
     next.dashCooldown = C.dashCooldown;
   }
 
-  const gate = routeOf(course)[player.activeGate];
+  const gate = route[player.activeGate];
   const tube = gate ? gate.radius * C.grappleTubeRatio : 0;
   const anchor: Vec3 | null = gate ? [gate.position[0], gate.position[1] + gate.radius + tube, gate.position[2] - tube] : null;
   const forward = forwardOf(player.yaw, player.pitch);
@@ -172,9 +212,9 @@ export function stepAbilities(
       remaining: C.traceDuration, hitTargetId: hit?.id ?? null, destroyed: hit?.hp === 1,
     };
     if (hit) {
-      next.targets = next.targets.map((target) => target.id === hit.id ? { ...target, hp: target.hp - 1 } : target);
+      next.targets = next.targets.map((target) => target.id === hit.id ? { ...target, hp: Math.max(0, target.hp - 1), hitFlash: C.hitFlashDuration } : target);
       next.hits += 1;
-      if (hit.hp === 1) next.score += C.targetScore;
+      if (hit.hp === 1) next.score += ENEMY_STATS[hit.kind].score;
     }
   }
 

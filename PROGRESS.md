@@ -1,5 +1,41 @@
 # PROGRESS
 
+## Corrected Happy Oyster attempt — connected, world creation rejected
+
+User approved one corrected Reactor-only attempt. The single session POST returned HTTP 201; SDK lifecycle progressed connecting → waiting → ready. Connection completed about 5.8 seconds after the connect call. The subsequent create-world request failed after about 4.2 seconds with Happy Oyster code `400001`; no world ID, travel or video frame was returned. Disconnect completed. Evidence is separate from the initial attempt: `docs/evidence/gate-9/happy-oyster-1789231099051.json`, `-final.png`, and `.webm`.
+
+This confirms Happy Oyster session availability for that attempt, NOT a usable world or gameplay fallback. The sanitized report captured the code but not the upstream message, so the exact cause of 400001 remains unknown; it must not be labeled capacity exhaustion or authentication failure without more evidence. Public Happy Oyster error documentation did not explain that code. The documented session-log path is `reactor logs --session 2c34a92d-38c6-436a-be6c-9a17df765eff`; the Reactor CLI is not installed here. No further session/travel attempts were made. The probe now labels build-stage failures as world-creation failures rather than generic connection failures.
+
+Happy Oyster fallback integration remains blocked on first-frame/steering proof. LingBot World 2 remains the main renderer with the corrected handshake settings. No alternate provider was used.
+
+## Happy Oyster probe — inconclusive; handshake configuration corrected
+
+User authorized one Happy Oyster probe through Reactor only, as a possible fallback for unavailable LingBot World 2. Installed pinned `@reactor-models/happy-oyster@1.0.0` (published August 29). The token broker now accepts only the two explicit model names and scopes each token to the selected model; Happy Oyster tokens permit one session. Added an operator-only probe surface at `/?operator=1&probe=happy-oyster`. It does not auto-connect and uses the lower-level travel API to avoid the facade's automatic travel retries. The opt-in probe in `e2e/real-reactor.spec.ts` intercepts and blocks any second session POST.
+
+`REAL_REACTOR=1 HAPPY_OYSTER_PROBE=1 pnpm exec playwright test e2e/real-reactor.spec.ts --grep 'Happy Oyster:' --reporter=line` made exactly one session-start request. Token issuance succeeded; connect failed with REQUEST_TIMEOUT after about 1.6 seconds. No world, travel or first frame was created, and disconnect completed. Evidence: `docs/evidence/gate-9/happy-oyster-probe.json`, `happy-oyster-final.png`, `happy-oyster-probe.webm`. This does NOT establish a Happy Oyster capacity shortage.
+
+Investigation found incorrect client configuration in both the new probe and the existing LingBot adapter: Reactor's `ConnectOptions.maxAttempts` limits SDP-answer polling, NOT session-start requests (official SDK types documentation says default 6). Removed the one-poll override in both places and removed the probe's extra constructor polling overrides. LingBot retains the single connection owner, disabled auto-connect, and bounded quota/capacity backoff. The prior SDK timing-field inference about waiting was also too strong: official session docs define waiting as awaiting GPU assignment, so UI detail now includes GPU assignment and stream connection.
+
+`pnpm typecheck` and `git diff --check` passed after the handshake code correction. No corrected live retry has been attempted: the single authorized probe was consumed, so approval is needed for another. Happy Oyster is NOT yet integrated as a game fallback; first-frame/steering proof remains blocked. Its 120-second Adventure travel budget and lack of a documented rotation-speed setter remain integration constraints. The local preview on port 3100 is untouched.
+
+## Textured hoops with Kimi art direction
+
+User rejected flat, untextured hoops and requested real assets plus Kimi control. Downloaded actual ambientCG Color/NormalGL maps for Metal030, Rock030, Wood048 and Fabric026 under CC0, converted to eight local 512px WebP maps (853,678 bytes total). Provenance, license and compression details are in `public/materials/manifest.json`. No downloaded archives or dependencies retained.
+
+The strict candidate schema now requires `hoops`: material family, nullable hex base/accent colors, bounded roughness, metalness, texture scale and rim emission. Kimi's compiler instructions choose those from the image rather than fixture rules. Prepared fallback samples texture/color from the supplied image. The image itself is also an available texture family for illustration/collage/unusual media. URLs and shader code remain runtime-owned; the model cannot introduce arbitrary asset downloads. Older candidates without this new field require recompilation/repair.
+
+`src/game/hoop-material.ts` renders a smooth 96×16 torus using native WebGL2, perspective-correct UVs, albedo/normal maps, material lighting and narrow active-rim accents. It composites into the existing overlay and retains the old 2D path if WebGL is unavailable. Opening geometry remains unchanged. Assets load alongside world staging, persist through patch/replay, and release bitmap/GPU resources on replacement/unmount; detached overlays dispose their GPU buffers. Local material-fetch failures use the source texture. No physics, grapple anchors or collision rules changed.
+
+Production build including TypeScript passed; `git diff --check` passed. Restarted the isolated `GOLEM_TEST_WORLD=fake` app on port 3100; page and stone normal-map requests returned 200. Use `http://127.0.0.1:3100/` without `compiler=off` for real Kimi rules/material selection with no Reactor dependency. The compiler-off preview now explicitly labels Kimi as off. No browser QA, shader runtime check, screenshots, new model calls or Reactor sessions were run; appearance/performance and the expanded compiler response remain for manual confirmation.
+
+## UI refinement and connection-wait clarification
+
+User requested a fuller UI pass and asked whether GPU waits can be shortened. Inspection of the installed Reactor SDK (`handleStatusChanged` in `@reactor-team/js-sdk/dist/index.js`) shows that its `waiting` phase is timed as transport connection after session creation; it is not itself proof of GPU exhaustion. Replaced the unconditional Waiting for a GPU label with connection-specific headings/details, explicit automatic-retry countdowns, and the existing classified error message. Actual capacity refusals and session rate limits remain Reactor-side constraints. Existing prewarm, one-attempt owner, same-session reuse and bounded retry backoff are unchanged; no measured latency improvement is claimed.
+
+UI implementation: two-column image-first input/build/ready layouts that collapse on narrow screens, complete source-image previews, visible direction label, public example-image action, selected Adventure kit treatment, readable staging details, pre-flight keyboard guide, labeled HUD statistics, non-overlapping grid rows for gameplay controls/abilities/operator, and a larger cartridge result. Preserved native controls, focus states, dark/lime identity and reduced-motion handling. Input screens now have a scrim when returning to a still-running world. Prepared-rule labels distinguish deliberate compiler skipping from compiler failure.
+
+Verification limited to `pnpm typecheck`, `git diff --check`, and local HTTP readiness (200), per the user's instruction to handle testing personally. No browser QA, screenshots, new dependencies or paid/live sessions. Dev server remains at `http://127.0.0.1:3000/`. Visual rendering and real-service latency remain for the user's manual pass.
+
 ## Submission handoff — implementation only; user owns testing
 
 User explicitly stopped QA and live rehearsals to prioritize submission. The visual-QA worker was stopped before it edited files or launched any tests. No additional live session was started. Older `gate-9/qa/play-1440x900.png` predates the hoop upgrade; it is not evidence of a current flat-green-ring regression.

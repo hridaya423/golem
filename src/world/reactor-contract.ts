@@ -1,14 +1,16 @@
 import { z } from "zod";
 import { IDLE_CONTROLS, type WorldControls } from "./world.ts";
 
-export function tokenRequestBody() {
+export const ReactorModelSchema = z.enum(["reactor/lingbot-world-2", "reactor/happy-oyster-adventure"]);
+
+export function tokenRequestBody(model: z.infer<typeof ReactorModelSchema> = "reactor/lingbot-world-2") {
   return {
     expires_after: 3600,
     authorization_details: [
       {
         type: "session",
-        resources: { models: { match: ["reactor/lingbot-world-2"] } },
-        constraints: { max_sessions: 3, max_session_duration_seconds: 3600 },
+        resources: { models: { match: [model] } },
+        constraints: { max_sessions: model === "reactor/happy-oyster-adventure" ? 1 : 3, max_session_duration_seconds: 3600 },
       },
     ],
   } as const;

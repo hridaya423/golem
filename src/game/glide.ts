@@ -29,6 +29,8 @@ export type GlideCourse = {
   rules: GameRules;
 };
 
+export type RouteCourse = Pick<GlideCourse, "entities" | "rules">;
+
 export type GlideInput = { turn: number; pitch: number; boost: boolean };
 
 export type GlideStatus = "running" | "won" | "failed";
@@ -71,7 +73,7 @@ export const IDLE_INPUT: GlideInput = { turn: 0, pitch: 0, boost: false };
 
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
 
-export function routeOf(course: GlideCourse): ProxyEntity[] {
+export function routeOf(course: RouteCourse): ProxyEntity[] {
   const byId = new Map(course.entities.map((e) => [e.id, e]));
   return [...course.rules.requiredCheckpointIds, course.rules.goalEntityId].map((id) => {
     const entity = byId.get(id);
@@ -80,7 +82,7 @@ export function routeOf(course: GlideCourse): ProxyEntity[] {
   });
 }
 
-export function startOf(course: GlideCourse): ProxyEntity {
+export function startOf(course: RouteCourse): ProxyEntity {
   const start = course.entities.find((e) => e.kind === "start");
   if (!start) throw new Error("course has no start entity");
   return start;

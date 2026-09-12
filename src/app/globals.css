@@ -258,11 +258,18 @@ kbd {
 }
 
 .stage-result {
+  max-width: 1100px;
   gap: 20px;
+}
+
+.stage-result > p {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Full-bleed scrim behind text surfaces that sit over the world (stage itself is max-width 1100px). */
 .overlay-panel::before,
+.stage-input::before,
 .stage-building::before,
 .stage-ready::before {
   content: "";
@@ -356,10 +363,11 @@ kbd {
 .applied-rule {
   margin: 0;
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 40px;
+  font-size: clamp(24px, 5vw, 40px);
   font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
 }
 
 .transcript {
@@ -496,6 +504,9 @@ a.download:active {
 }
 
 .connection-heading {
+  grid-column: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
@@ -515,7 +526,8 @@ a.download:active {
 }
 
 .connection-detail {
-  margin: 4px 0 0;
+  grid-column: 1;
+  margin: 0;
   max-width: 80ch;
   font-size: 12px;
   line-height: 1.6;
@@ -626,6 +638,7 @@ a.download:active {
 .error-text {
   color: var(--fail);
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .action-row {
@@ -845,6 +858,8 @@ a.download:active {
 
 @media (max-width: 480px) {
   .stage { padding: 24px 16px; }
+  .connection-status { grid-template-columns: minmax(0, 1fr); }
+  .connection-status > button { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 8px; }
   .seed-pane .action-row > button { flex: 1 1 auto; }
   .seed-empty { padding: 16px; }
   .seed-empty strong { font-size: 18px; }

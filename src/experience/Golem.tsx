@@ -10,8 +10,8 @@ import {
   type GlideInput,
   type GlideState,
 } from "../game/glide";
-import { courseOf, type ValidatedGameSpec } from "../game/spec";
-import { drawHoops, sampleHoopPalette, type HoopPalette } from "../game/hoops";
+import { courseOf, DEFAULT_HOOP_APPEARANCE, type ValidatedGameSpec } from "../game/spec";
+import { drawHoops, loadHoopSurface, releaseHoopSurface, sampleHoopPalette, type HoopPalette, type HoopSurface } from "../game/hoops";
 import { createAbilityState, releaseAbilities, stepAbilities, type AbilityInput, type AbilityState } from "../game/abilities";
 import { drawAbilities } from "../game/ability-overlay";
 import { compileGame } from "../compiler/client";
@@ -134,10 +134,11 @@ function drawRoute(
   state: GlideState,
   course: GlideCourse,
   palette: HoopPalette | null,
+  surface: HoopSurface | null,
 ): void {
   const { width, height } = ctx.canvas;
   ctx.clearRect(0, 0, width, height);
-  drawHoops(ctx, state, course, palette ?? undefined);
+  drawHoops(ctx, state, course, palette ?? undefined, surface ?? undefined);
   const unit = height / (ctx.canvas.clientHeight || height);
   const x = width / 2, y = height / 2;
   ctx.save();
@@ -196,6 +197,7 @@ export function Golem({
   const runRef = useRef<GlideState | null>(null);
   const keyDownAtRef = useRef<number | null>(null);
   const hoopPaletteRef = useRef<HoopPalette | null>(null);
+  const hoopSurfaceRef = useRef<HoopSurface | null>(null);
   const stageStartAtRef = useRef<number | null>(null);
   const inputToOverlayRef = useRef<number[]>([]);
   const seedRequestedRef = useRef(false);
@@ -320,7 +322,7 @@ export function Golem({
     worldPromptHashRef.current = null;
     patchedFrameRef.current = null;
     const stillRunning = () =>
-      stagingRunRef.current === runId && phaseRef.current.name === "staging";
+      !controller.signal.aborted && stagingRunRef.current === runId && phaseRef.current.name === "staging";
     const progress = (
       step: StagingStepName,
       status: "active" | "passed" | "repairing" | "fallback" | "failed",
@@ -384,7 +386,17 @@ export function Golem({
       if (!target) throw new Error("World driver unavailable");
       const prompt = composeWorldPrompt(staged.world.basePrompt, staged.world.landmarks);
       worldPromptHashRef.current = await sha256Hex(new TextEncoder().encode(prompt));
-      await target.stage({ image: phase.seed, prompt, seed: staged.world.seed });
+      await Promise.all([
+        target.stage({ image: phase.seed, prompt, seed: staged.world.seed }),
+        loadHoopSurface(phase.seed.normalized, staged.hoops ?? DEFAULT_HOOP_APPEARANCE).then((surface) => {
+          if (!stillRunning()) {
+            releaseHoopSurface(surface);
+            return;
+          }
+          if (hoopSurfaceRef.current) releaseHoopSurface(hoopSurfaceRef.current);
+          hoopSurfaceRef.current = surface;
+        }),
+      ]);
       if (stillRunning()) dispatch({ type: "STAGED" });
     };
     run().catch((error: unknown) => {
@@ -400,6 +412,13 @@ export function Golem({
     abortRef.current?.abort();
     abortRef.current = null;
   }, [phase]);
+
+  useEffect(() => () => {
+    stagingRunRef.current = 0;
+    abortRef.current?.abort();
+    if (hoopSurfaceRef.current) releaseHoopSurface(hoopSurfaceRef.current);
+    hoopSurfaceRef.current = null;
+  }, []);
 
   useEffect(() => {
     if (phase.name !== "playing") return;
@@ -508,7 +527,7 @@ export function Golem({
       if (steps === MAX_FRAME_STEPS) accumulator = 0;
       runRef.current = state;
       if (ctx) {
-        drawRoute(ctx, state, course, hoopPaletteRef.current);
+        drawRoute(ctx, state, course, hoopPaletteRef.current, hoopSurfaceRef.current);
         if (abilitiesRef.current) drawAbilities(ctx, abilitiesRef.current, state, hoopPaletteRef.current ?? undefined);
       }
       const keyDownAt = keyDownAtRef.current;
@@ -550,6 +569,7 @@ export function Golem({
     return () => {
       cancelAnimationFrame(raf);
       observer?.disconnect();
+      canvas?.dispatchEvent(new Event("dispose"));
       releaseAll();
     };
   }, [phase, adventure, currentAbilities, releaseAll]);
@@ -804,7 +824,9 @@ export function Golem({
   const playSpec = (playing || finished) && "spec" in phase ? phase.spec : null;
   const playCourse = playSpec ? courseOf(playSpec) : null;
   const sourceLabel = (source: SpecSource, label: string) =>
-    source === "fallback" ? "Prepared game (compiler unavailable)" : `${source === "live" ? "Live" : "Repaired"} rules · ${label}`;
+    source === "fallback"
+      ? label === "cached" || label === "offline" ? "Prepared game · compiler skipped" : "Prepared game · compiler unavailable"
+      : `${source === "live" ? "Live" : "Repaired"} rules · ${label}`;
 
   return (
     <div className="experience" data-phase={phase.name}>
@@ -923,6 +945,7 @@ export function Golem({
             <div className="flow-strip" aria-label="How it works">
               <span>Image to world</span><span>Fly &amp; remix</span><span>Keep the cartridge</span>
             </div>
+            {compiler === "off" && <p className="pill">Prepared preview · Kimi compiler is off</p>}
           </div>
           {worldMode === "live" && <div className="stage-status"><StatusPill status={worldStatus} onRetry={() => void driver?.reconnect()} /></div>}
         </main>
@@ -960,6 +983,7 @@ export function Golem({
             <dl className="decision">
               <div><dt>WORLD</dt><dd>{phase.spec.world.landmarks[0].description}</dd></div>
               <div><dt>GAME</dt><dd>{adventure ? "Glide + Adventure kit" : "Glide"}</dd></div>
+              <div><dt>HOOPS</dt><dd>{!phase.spec.hoops || phase.spec.hoops.material === "reference" ? "Texture from your image" : `${phase.spec.hoops.material} texture`}</dd></div>
               <div><dt>RULE</dt><dd>Pass 3 rings in order within {phase.spec.rules.durationSeconds}s</dd></div>
               <div><dt>GOAL</dt><dd>{goalLabel(phase.spec)}</dd></div>
             </dl>
@@ -1042,6 +1066,7 @@ export function Golem({
           {phase.outcome === "won" ? (
             <>
               <h2>Course complete.</h2>
+              <p className="mono muted">{formatRemaining(phase.elapsed)} · All 3 rings cleared</p>
               {phase.run === "original" ? (
                 <>
                   <p className="muted">Same world. A new rule.</p>
