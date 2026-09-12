@@ -10,6 +10,7 @@ import {
   releaseAbilities,
   stepAbilities,
   type AbilityInput,
+  type AbilityState,
   type AbilityTarget,
   type EnemyKind,
 } from "../src/game/abilities.ts";
@@ -71,6 +72,64 @@ test("same fixed-step ability input sequence gives the same result without mutat
     return { player, abilities };
   };
   assert.deepEqual(run(), run());
+});
+
+test("enemy roles have deterministic bounded motion and support a shared route-only course", () => {
+  const shared = { entities: course.entities, rules: course.rules };
+  const initial = createAbilityState(shared);
+  assert.deepEqual(initial.targets.map((target) => [target.kind, target.hp, target.maxHp, target.radius]), [
+    ["scout", 2, 2, 5], ["striker", 1, 1, 4], ["bulwark", 4, 4, 7],
+  ]);
+  const selected: EnemyKind[] = ["bulwark", "scout", "striker"];
+  assert.deepEqual(createAbilityState(shared, selected).targets.map((target) => target.kind), selected);
+  const snapshot = structuredClone(initial);
+  let prior = initial;
+  for (let frame = 0; frame < 600; frame++) {
+    const player = { ...createGlideState(course), elapsed: frame * GLIDE_CALIBRATION.step };
+    const next = stepAbilities(prior, IDLE_ABILITIES, player, shared).abilities;
+    const direct = stepAbilities(initial, IDLE_ABILITIES, player, shared).abilities;
+    assert.deepEqual(next.targets, direct.targets);
+    const [scout, striker, bulwark] = next.targets;
+    assert.equal(scout.position[0], scout.origin[0]);
+    assert.equal(scout.position[2], scout.origin[2]);
+    assert.ok(Math.abs(scout.position[1] - scout.origin[1]) <= 1.2 + 1e-9);
+    assert.equal(striker.position[1], striker.origin[1]);
+    assert.ok(Math.hypot(...striker.position.map((value, i) => value - striker.origin[i])) <= 3 + 1e-9);
+    assert.deepEqual(bulwark.position, bulwark.origin);
+    prior = next;
+  }
+  assert.notDeepEqual(prior.targets[0].position, initial.targets[0].position);
+  assert.notDeepEqual(prior.targets[1].position, initial.targets[1].position);
+  assert.deepEqual(initial, snapshot);
+});
+
+test("each role takes its configured hits, flashes, scores once and freezes at destruction", () => {
+  for (const kind of ["scout", "striker", "bulwark"] as const) {
+    const initial = createAbilityState(course, [kind, kind, kind]);
+    const target = at(initial.targets[0], [0, 30, 80]);
+    let abilities: AbilityState = { ...initial, targets: [target] };
+    for (let hit = 1; hit <= ENEMY_STATS[kind].hp; hit++) {
+      const player = { ...createGlideState(course), position: [0, 30, 20] as Vec3, elapsed: hit * A.fireCooldown };
+      const moved = stepAbilities(abilities, IDLE_ABILITIES, player, course).abilities.targets[0];
+      const ready = { ...abilities, fireCooldown: 0 };
+      const snapshot = structuredClone(ready);
+      abilities = stepAbilities(ready, press({ fire: true }), aim(player, moved.position), course).abilities;
+      assert.deepEqual(ready, snapshot);
+      assert.equal(abilities.targets[0].hp, ENEMY_STATS[kind].hp - hit);
+      assert.equal(abilities.targets[0].hitFlash, A.hitFlashDuration);
+      assert.deepEqual(abilities.targets[0].position, moved.position);
+      assert.equal(abilities.score, hit === ENEMY_STATS[kind].hp ? ENEMY_STATS[kind].score : 0);
+    }
+    const destroyed = abilities.targets[0];
+    for (let frame = 0; frame <= ticks(A.hitFlashDuration); frame++) {
+      abilities = stepAbilities(abilities, press({ fire: true }), { ...createGlideState(course), elapsed: 20 + frame * GLIDE_CALIBRATION.step }, course).abilities;
+      assert.deepEqual(abilities.targets[0].position, destroyed.position);
+      assert.equal(abilities.targets[0].hp, 0);
+    }
+    assert.equal(abilities.targets[0].hitFlash, 0);
+    assert.equal(abilities.hits, ENEMY_STATS[kind].hp);
+    assert.equal(abilities.score, ENEMY_STATS[kind].score);
+  }
 });
 
 test("dash lasts 0.35 seconds, requires a rising edge and respects its cooldown", () => {
@@ -278,17 +337,18 @@ test("pulses miss off-axis, behind and out-of-range targets and hit only the nea
   const [x, y, z] = player.position;
   const base = createAbilityState(course);
   for (const position of [[x + 20, y, z + 60], [x, y, z - 10], [x, y, z + A.fireRange + 1]] as Vec3[]) {
-    const next = stepAbilities({ ...base, targets: [{ ...base.targets[0], position }] }, press({ fire: true }), player, course);
+    const next = stepAbilities({ ...base, targets: [at(base.targets[0], position)] }, press({ fire: true }), player, course);
     assert.equal(next.abilities.hits, 0);
     assert.equal(next.abilities.targets[0].hp, A.targetHp);
   }
   const targets = [
-    { ...base.targets[0], position: [x, y, z + 80] as Vec3 },
-    { ...base.targets[1], position: [x, y, z + 40] as Vec3 },
+    at(base.targets[0], [x, y, z + 80]),
+    at(base.targets[1], [x, y, z + 40]),
   ];
   const next = stepAbilities({ ...base, targets }, press({ fire: true }), player, course);
   assert.equal(next.abilities.targets[0].hp, A.targetHp);
-  assert.equal(next.abilities.targets[1].hp, A.targetHp - 1);
+  assert.equal(next.abilities.targets[1].hp, targets[1].hp - 1);
+  assert.equal(next.abilities.score, ENEMY_STATS.striker.score);
   assert.equal(next.abilities.shotTrace?.hitTargetId, targets[1].id);
 });
 
@@ -302,9 +362,9 @@ test("ability storage, counters, cooldowns and assists remain bounded under prol
     abilities = next.abilities;
     assert.equal(abilities.targets.length, 3);
     assert.ok(abilities.shots <= maxShots);
-    assert.ok(abilities.hits <= A.targetHp * 3);
-    assert.ok(abilities.score <= A.targetScore * 3);
-    assert.ok(abilities.targets.every((t) => t.hp >= 0 && t.hp <= A.targetHp));
+    assert.ok(abilities.hits <= abilities.targets.reduce((sum, target) => sum + target.maxHp, 0));
+    assert.ok(abilities.score <= abilities.targets.reduce((sum, target) => sum + ENEMY_STATS[target.kind].score, 0));
+    assert.ok(abilities.targets.every((t) => t.hp >= 0 && t.hp <= t.maxHp && t.hitFlash >= 0 && t.hitFlash <= A.hitFlashDuration));
     assert.ok(abilities.dashRemaining >= 0 && abilities.dashRemaining <= A.dashDuration);
     assert.ok(abilities.dashCooldown >= 0 && abilities.dashCooldown <= A.dashCooldown);
     assert.ok(abilities.fireCooldown >= 0 && abilities.fireCooldown <= A.fireCooldown);
@@ -343,7 +403,7 @@ test("Canvas overlay removes destroyed silhouettes, draws feedback and never cle
   } as unknown as CanvasRenderingContext2D;
   const player = nearGate();
   const base = createAbilityState(course);
-  const target = { ...base.targets[0], position: [player.position[0], player.position[1], player.position[2] + 50] as Vec3 };
+  const target = at(base.targets[0], [player.position[0], player.position[1], player.position[2] + 50]);
   const attached = stepAbilities({ ...base, targets: [target] }, press({ grapple: true, fire: true }), player, course).abilities;
   const snapshot = structuredClone(attached);
   drawAbilities(ctx, attached, player);
@@ -361,7 +421,7 @@ test("Canvas overlay removes destroyed silhouettes, draws feedback and never cle
 test("Canvas target bodies and grapple rope use the supplied image palette with a neutral no-palette fallback", () => {
   const player = nearGate();
   const base = createAbilityState(course);
-  const target = { ...base.targets[0], position: [player.position[0], player.position[1], player.position[2] + 50] as Vec3 };
+  const target = at(base.targets[0], [player.position[0], player.position[1], player.position[2] + 50]);
   const attached = stepAbilities({ ...base, targets: [target] }, press({ grapple: true, fire: true }), player, course).abilities;
   const palettes: HoopPalette[] = [
     { shadow: [40, 16, 24], midtone: [160, 70, 90], highlight: [244, 216, 230] },

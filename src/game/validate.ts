@@ -1,4 +1,5 @@
 import { simulateCourse } from "./glide.ts";
+import { PARKOUR_CALIBRATION, simulateParkourCourse, type ParkourCourse } from "./parkour.ts";
 import {
   brandValidated,
   courseOf,

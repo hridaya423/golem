@@ -1,4 +1,6 @@
-import { forwardOf, projectPoint, routeOf, type GlideCourse, type GlideState, type ProxyEntity, type Vec3 } from "./glide.ts";
+import type { AbilityState } from "./abilities.ts";
+import { forwardOf, projectPoint, routeOf, type RouteCourse, type GlideState, type ProxyEntity, type Vec3 } from "./glide.ts";
+import type { ParkourPlatform } from "./parkour.ts";
 import { drawHoopSurface, type HoopSurface } from "./hoop-material.ts";
 export { loadHoopSurface, releaseHoopSurface, type HoopSurface } from "./hoop-material.ts";
 
